@@ -18,7 +18,7 @@ class _ChartState extends State<Chart> {
   Widget build(BuildContext context) {
    
     
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: 300,
       child: SfCartesianChart(

@@ -1,8 +1,8 @@
-import 'dart:io';
 
-import 'package:fiboutiquesv1/screen/search_screen.dart';
+import 'package:fiboutiquesv1/screen/settings.dart';
+import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
+import 'package:fiboutiquesv1/widgets/search_data.dart';
 import 'package:flutter/material.dart';
-import 'package:path_provider/path_provider.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
 
 class MyHomeScree extends StatefulWidget {
@@ -15,6 +15,7 @@ class MyHomeScree extends StatefulWidget {
 class CardItem {
   final String title;
   final String subtitle;
+  
 
   const CardItem({
     required this.title,
@@ -22,10 +23,12 @@ class CardItem {
   });
 }
 
+Bottom bt = new Bottom();
+
 
 class _MyHomeScreeState extends State<MyHomeScree> {
 
-  Color mcolor = Color(0xff368983);
+  Color mcolor = const Color(0xff368983);
 
   var history;
   final List<String> day = [
@@ -39,19 +42,19 @@ class _MyHomeScreeState extends State<MyHomeScree> {
   ];
 
   List<CardItem> items = [
-    CardItem(
+    const CardItem(
       title : '2:30',
       subtitle : 'naudio',
     ),
-    CardItem(
+    const CardItem(
       title : '1:30',
       subtitle : 'naudio',
     ),
-    CardItem(
+    const CardItem(
       title : '2:50',
       subtitle : 'naudio',
     ),
-    CardItem(
+    const CardItem(
       title : '6:00',
       subtitle : 'naudio',
     )
@@ -67,8 +70,8 @@ class _MyHomeScreeState extends State<MyHomeScree> {
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
                 
-                SizedBox(height: 90, child: _head()),
-                SizedBox(
+                SizedBox(height: 70, child: _head()),
+                const SizedBox(
                         height: 10,
                       ),
                  
@@ -78,42 +81,51 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                   
                   child: ListView.separated(
                     
-                  padding: EdgeInsets.all(8) ,                 
+                  padding: const EdgeInsets.all(8) ,                 
                   scrollDirection: Axis.horizontal,
                   itemCount: 4,
-                  separatorBuilder: (context, index) => SizedBox(width: 12,),
+                  separatorBuilder: (context, index) => const SizedBox(width: 12,),
                   itemBuilder: (context, index) => builderCard(item : items[index] ),
                  ),
                  ),
                  
                  
                  Container(
+                  height: 40,
                   child: Padding (
 
-                    padding: const EdgeInsets.all(15),
+                    padding: const EdgeInsets.all(10),
 
                  child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Icon(Icons.shopping_cart,
+                      IconButton(
+                        onPressed: (){}, 
+                      icon : Icon(Icons.shopping_cart,
                       color: mcolor,
-                       size: 30,
-                       shadows: [
+                       size: 25,
+                       shadows: const [
                         BoxShadow(
                             blurRadius: 2,
                             
                         ),
                          ],
                       ),
-                       Icon(Icons.add,
+                      ),
+                       IconButton(
+                        icon :Icon(
+                          Icons.add,
                        color: mcolor,
-                       size: 30,
-                       shadows: [
+                       size: 25,
+                       shadows: const [
                         BoxShadow(
                             blurRadius: 2,
                             
                         ),
                        ],
+                      
+                       ),
+                        onPressed : () {}
                        ),
                     ],
                   ),
@@ -123,18 +135,18 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                 
                     Expanded(
                       child: 
-                 Container(
+                 SizedBox(
                   height: 170,
                   child: ListView(
                     scrollDirection: Axis.vertical,
                     children: [
                       
                         buildProduct(),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         buildProduct(),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         buildProduct(),
-                        SizedBox(height: 10,),
+                        const SizedBox(height: 10,),
                         buildProduct(),
                     ],
                   ),
@@ -149,7 +161,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
     );
   }
 
-Widget buildProduct()   =>     Container(
+Widget buildProduct()   =>     SizedBox(
                         width: 400,
                        // padding: EdgeInsets.all(12),
                         
@@ -162,24 +174,24 @@ Widget buildProduct()   =>     Container(
                             Row(
                               mainAxisAlignment: MainAxisAlignment.spaceAround,
                               children: [
-                                Text('Product name'),
+                                const Text('Product name'),
                                 Flexible(
   
-  child: Container(
-    
-    width: 80,
+  child: SizedBox(
+   width: 80,
   height: 35,// Add this line
-    child: TextField(
+     child: TextField(
+    
       decoration: InputDecoration(
         labelText: '2500',
         labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5)),
+          borderSide: const BorderSide(width: 2, color: Color(0xffC5C5C5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(width: 2, color: Color(0xff368983)),
+          borderSide: const BorderSide(width: 2, color: Color(0xff368983)),
         ),
       ),
     ),
@@ -189,7 +201,7 @@ Widget buildProduct()   =>     Container(
                                 
     Flexible(
          flex: 1,
-           child: Container(
+           child: SizedBox(
     
              width: 80,
             height: 35,
@@ -200,11 +212,11 @@ Widget buildProduct()   =>     Container(
         labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
         enabledBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5)),
+          borderSide: const BorderSide(width: 2, color: Color(0xffC5C5C5)),
         ),
         focusedBorder: OutlineInputBorder(
           borderRadius: BorderRadius.circular(10),
-          borderSide: BorderSide(width: 2, color: Color(0xff368983)),
+          borderSide: const BorderSide(width: 2, color: Color(0xff368983)),
         ),
       ),
     ),
@@ -216,12 +228,16 @@ Widget buildProduct()   =>     Container(
                                 
 
                                 
-                                Column(
+                                 Column(
                                   mainAxisAlignment: MainAxisAlignment.end,
                                   children: [
                                     Row(
                                       children: [
-                                        Icon(Icons.delete,color: Colors.red,),
+                                        IconButton(onPressed: (){},
+                                         icon : Icon(
+                                            Icons.delete,
+                                            color: Colors.red,
+                                            ),)
                                       ],
                                     )
                                   ],
@@ -241,15 +257,23 @@ Widget buildProduct()   =>     Container(
                          
                           children: [
                            Padding(
-                            padding: EdgeInsets.all(10),
+                            padding: const EdgeInsets.all(10),
                            child : Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             
                             children: [
                               Text(item.title),
-                               Icon(Icons.close,
+                              GestureDetector(
+                                onTap: (){
+                                  //delete audio from list
+                                },
+                                child : Icon(
+                                  Icons.close,
                                color: Colors.black.withOpacity(0.3),
+                              
                                ),
+                              ),
+
                                
                                   ],
                                 ),
@@ -257,7 +281,7 @@ Widget buildProduct()   =>     Container(
                            ),
 
                              Padding(
-                             padding: EdgeInsets.only(left: 5, right: 5, bottom: 5),
+                             padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
                              child : Row(
                              
                             mainAxisAlignment: MainAxisAlignment.start,
@@ -291,7 +315,7 @@ Widget buildProduct()   =>     Container(
         borderRadius: BorderRadius.circular(5),
         //child: Image.asset('images/${history.name}.png', height: 40),
       ),
-      title: Text(
+      title: const Text(
        // history.name,
        'historyname',
         style: TextStyle(
@@ -299,13 +323,13 @@ Widget buildProduct()   =>     Container(
           fontWeight: FontWeight.w600,
         ),
       ),
-      subtitle: Text(
+      subtitle: const Text(
        'historydate',
         style: TextStyle(
           fontWeight: FontWeight.w600,
         ),
       ),
-      trailing: Text(
+      trailing: const Text(
        // history.amount,
         'Total price',
         style: TextStyle(
@@ -317,14 +341,66 @@ Widget buildProduct()   =>     Container(
   }
 
   Widget _head() {
-    return Stack(
+    return Container(
+      height: 100,
+      decoration: const BoxDecoration(
+                color: Color(0xff368983),
+                borderRadius: BorderRadius.only(
+                  bottomLeft: Radius.circular(20),
+                  bottomRight: Radius.circular(20),
+                ),
+                ),
+      child : Padding(
+        padding: EdgeInsets.all(8.0),
+        child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+         IconButton(onPressed: (){
+          Navigator.of(context)
+          .push(MaterialPageRoute(builder: (_) => const SettingScreen()) );
+         }, 
+         icon:  Icon(Icons.settings,
+          size: 30,
+          color: Colors.white,
+          ),),
+          Text(' 0.0 FCFA',
+          style: TextStyle(
+            fontSize: 15,
+          color: Colors.white,
+          fontWeight: FontWeight.bold,
+          ),
+          ),
+          IconButton(
+          onPressed: (){
+            showSearch(
+              context: context, 
+              delegate: DataSearch());
+              //if click on search icon
+              //scroll Container
+              //fixe float by=utton
+              //add quatity Textfiel
+              //change color on audio listview
+              //
+          },
+           icon: Icon(Icons.search,
+          size: 30,
+          color: Colors.white,
+          ),),
+           
+              
+        ],
+      ),
+      
+      )
+    );
+    /*return Stack(
       children: [
         Column(
           children: [
             Container(
               width: MediaQuery.of(context).size.width,
-              height: 90,
-              decoration: BoxDecoration(
+              height: 120,
+              decoration: const BoxDecoration(
                 color: Color(0xff368983),
                 borderRadius: BorderRadius.only(
                   bottomLeft: Radius.circular(20),
@@ -341,15 +417,15 @@ Widget buildProduct()   =>     Container(
                       child: Container(
                         height: 40,
                         width: 40,
-                        color: Color.fromRGBO(250, 250, 250, 0.1),
+                        color: const Color.fromRGBO(250, 250, 250, 0.1),
                         child: GestureDetector(
                           onTap: () {
                             Navigator.of(context)
-                          .push(MaterialPageRoute(builder: (_) => const SearchPage()) );
+                          .push(MaterialPageRoute(builder: (_) => const SettingScreen()) );
                           },
                           
-                         child: Icon(
-                          Icons.search,
+                         child: const Icon(
+                          Icons.settings,
                           size: 30,
                           color: Colors.white,
                         ),
@@ -358,8 +434,8 @@ Widget buildProduct()   =>     Container(
                       ),
                     ),
                   ),
-                  Padding(
-                    padding: const EdgeInsets.only(top: 25, left: 10),
+                  const Padding(
+                    padding: EdgeInsets.only(top: 25, left: 10),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
@@ -374,14 +450,20 @@ Widget buildProduct()   =>     Container(
                         ),
                       ],
                     ),
-                  )
+                  ),
+                  ///
+                  ///
+                  
+            
+      
+                  ///
                 ],
               ),
             ),
           ],
         ),
       ],
-    );
+    ); */
   }
 
   

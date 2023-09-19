@@ -1,6 +1,5 @@
 
 
-import 'package:fiboutiquesv1/screen/home.dart';
 import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 

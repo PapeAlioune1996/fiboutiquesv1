@@ -1,4 +1,3 @@
-import 'package:fiboutiquesv1/screen/home.dart';
 import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 
@@ -45,11 +44,11 @@ class _SettingScreenState extends State<SettingScreen> {
       width: 340,
       child: Column(
         children: [
-          SizedBox(height: 50),
+          const SizedBox(height: 50),
           password(),
-            SizedBox(height: 25),
+            const SizedBox(height: 25),
           confirmpassword(),
-          SizedBox(height: 25),
+          const SizedBox(height: 25),
           save(),
         ],
       ),
@@ -64,15 +63,15 @@ class _SettingScreenState extends State<SettingScreen> {
        // focusNode: ex,
        // controller: expalin_C,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           labelText: 'password',
           labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5))),
+              borderSide: const BorderSide(width: 2, color: Color(0xffC5C5C5))),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xff368983))),
+              borderSide: const BorderSide(width: 2, color: Color(0xff368983))),
         ),
       ),
     );
@@ -85,15 +84,15 @@ class _SettingScreenState extends State<SettingScreen> {
        // focusNode: ex,
        // controller: expalin_C,
         decoration: InputDecoration(
-          contentPadding: EdgeInsets.symmetric(horizontal: 15, vertical: 15),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 15, vertical: 15),
           labelText: 'confirm password',
           labelStyle: TextStyle(fontSize: 17, color: Colors.grey.shade500),
           enabledBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xffC5C5C5))),
+              borderSide: const BorderSide(width: 2, color: Color(0xffC5C5C5))),
           focusedBorder: OutlineInputBorder(
               borderRadius: BorderRadius.circular(10),
-              borderSide: BorderSide(width: 2, color: Color(0xff368983))),
+              borderSide: const BorderSide(width: 2, color: Color(0xff368983))),
         ),
       ),
     );
@@ -110,11 +109,11 @@ class _SettingScreenState extends State<SettingScreen> {
         alignment: Alignment.center,
         decoration: BoxDecoration(
           borderRadius: BorderRadius.circular(15),
-          color: Color(0xff368983),
+          color: const Color(0xff368983),
         ),
         width: 120,
         height: 50,
-        child: Text(
+        child: const Text(
           'Save',
           style: TextStyle(
             fontFamily: 'f',
@@ -134,7 +133,7 @@ class _SettingScreenState extends State<SettingScreen> {
         Container(
           width: double.infinity,
           height: 240,
-          decoration: BoxDecoration(
+          decoration: const BoxDecoration(
             color: Color(0xff368983),
             borderRadius: BorderRadius.only(
               bottomLeft: Radius.circular(20),
@@ -143,9 +142,9 @@ class _SettingScreenState extends State<SettingScreen> {
           ),
           child: Column(
             children: [
-              SizedBox(height: 40),
+              const SizedBox(height: 40),
               Padding(
-                padding: EdgeInsets.symmetric(horizontal: 15),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   crossAxisAlignment: CrossAxisAlignment.start,
@@ -153,19 +152,19 @@ class _SettingScreenState extends State<SettingScreen> {
                     GestureDetector(
                       onTap: () {
                          Navigator.of(context)
-              .push(MaterialPageRoute(builder: (context) => Bottom()));
+              .push(MaterialPageRoute(builder: (context) => const Bottom()));
                       },
-                      child: Icon(Icons.arrow_back, color: Colors.white),
+                      child: const Icon(Icons.arrow_back, color: Colors.white),
                     ),
-                    Text(
+                    const Text(
                       'Make Password',
                       style: TextStyle(
                           fontSize: 20,
                           fontWeight: FontWeight.w600,
                           color: Colors.white),
                     ),
-                    new Opacity(opacity: 0.0, child: new Padding(
-              padding: const EdgeInsets.only(
+                    const Opacity(opacity: 0.0, child: Padding(
+              padding: EdgeInsets.only(
                 left: 16.0,
               ),
               child: Icon(
