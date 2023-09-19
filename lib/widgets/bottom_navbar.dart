@@ -1,13 +1,12 @@
 
 import 'dart:io';
 
-import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:audioplayers/audioplayers.dart';
 import 'package:fiboutiquesv1/screen/home.dart';
 import 'package:fiboutiquesv1/screen/statistics.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter/services.dart';
 import 'package:path_provider/path_provider.dart';
-import 'package:audioplayers/audioplayers.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:record/record.dart';
 
 
@@ -15,7 +14,7 @@ import 'package:record/record.dart';
 class Bottom extends StatefulWidget {
   const Bottom({Key? key}) : super(key: key);
 
-  set _fabHeight(double _fabHeight) {}
+  set _fabHeight(double fabHeight) {}
 
   @override
   State<Bottom> createState() => _BottomState();
@@ -23,83 +22,77 @@ class Bottom extends StatefulWidget {
 
 class _BottomState extends State<Bottom> {
   int index_color = 0;
-  List Screen = [MyHomeScree(),  Statistics()];
+  List Screen = [const MyHomeScree(),  const Statistics()];
 
-  late final RecorderController recorderController;
+  //late final RecorderController recorderController;
 
-  String? path;
-  String? musicFile;
+ AudioPlayer audioPlayer = AudioPlayer();
   bool isRecording = false;
-  bool isRecordingCompleted = false;
-  bool isLoading = true;
-  late Directory appDirectory;
+  bool isPlaying = false;
+  String currentRecordingPath = '';
+  List<String> audioPaths = []; // Create an instance of the Record class
 
-  @override
+ @override
   void initState() {
     super.initState();
-    _getDir();
-    _initialiseControllers();
+    _checkPermissions();
+    _loadAudioFiles();
+    
   }
 
-  void _getDir() async {
-    appDirectory = await getApplicationDocumentsDirectory();
-    path = "${appDirectory.path}/recording.m4a";
-    isLoading = false;
-    setState(() {});
-  }
-
-  void _initialiseControllers() {
-    recorderController = RecorderController()
-      ..androidEncoder = AndroidEncoder.aac
-      ..androidOutputFormat = AndroidOutputFormat.mpeg4
-      ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
-      ..sampleRate = 44100;
-  }
-
-   @override
-  void dispose() {
-    recorderController.dispose();
-    super.dispose();
-  }
-
-    void onstartRecording() async {
-    try {
-     
-        recorderController.reset();
-
-        final path = await recorderController.stop(false);
-
-        if (path != null) {
-          isRecordingCompleted = true;
-          debugPrint(path);
-          debugPrint("Recorded file size: ${File(path).lengthSync()}");
-        }
-      
-    } catch (e) {
-      debugPrint(e.toString());
-    } finally {
-      setState(() {
-        isRecording = !isRecording;
-      });
-    }
-  }
-  void onstopRecording() async {
-    try {
-      
-        await recorderController.record(path: path!);
-      
-    } catch (e) {
-      debugPrint(e.toString());
-    } finally {
-      setState(() {
-        isRecording = !isRecording;
-      });
+  Future<void> _checkPermissions() async {
+    if (!(await Permission.microphone.isGranted)) {
+      await Permission.microphone.request();
     }
   }
 
-  void _refreshWave() {
-    if (isRecording) recorderController.refresh();
+Future<void> _loadAudioFiles() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final files = await directory.list().toList();
+    setState(() {
+      audioPaths = files
+          .where((file) => file is File && file.path.endsWith('.wav'))
+          .map((file) => file.path)
+          .toList();
+    });
   }
+  
+  Future<void> _startRecording() async {
+    if (await Record().hasPermission()) {
+      final directory = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath = '${directory.path}/audio_$timestamp.wav';
+      await Record().start(
+        path: filePath,
+        encoder: AudioEncoder.wav,
+      );
+      setState(() {
+        isRecording = true;
+        currentRecordingPath = filePath;
+      });
+    } else {
+      // Handle permission not granted
+    }
+  }
+
+
+  Future<void> stopRecording() async {
+    await Record().stop();
+    setState(() {
+      isRecording = false;
+    });
+  }
+
+
+    Future<void> _stopRecording() async {
+    await Record().stop();
+    setState(() {
+      isRecording = false;
+    });
+    _loadAudioFiles();
+  }
+
+ 
 
 
  
@@ -107,38 +100,38 @@ class _BottomState extends State<Bottom> {
 
   @override
   Widget build(BuildContext context) {
-late double _fabHeight = 56.0;
+late double fabHeight = 56.0;
     return Scaffold(
       body: Screen[index_color],
       floatingActionButton: AnimatedContainer(
-        duration: Duration(milliseconds: 300),
-        height: _fabHeight,
+        duration: const Duration(milliseconds: 300),
+        height: fabHeight,
         child : FloatingActionButton( 
       autofocus: true,
         clipBehavior: Clip.none,
-        shape: CircleBorder(eccentricity: 0.1),
+        shape: const CircleBorder(eccentricity: 0.1),
         onPressed: ()  {
            if (isRecording) {
-            onstopRecording();
+            _stopRecording();
           } else {
-            onstartRecording();
+            _startRecording();
           }
         },
-        child: isRecording ? Icon(
+        
+        backgroundColor: const Color(0xff368983),
+        child: isRecording ? const Icon(
           Icons.stop_circle_outlined,
           color: Colors.white,
-          ) : Icon(Icons.mic_none_outlined,
+          ) : const Icon(Icons.mic_none_outlined,
             color: Colors.white,
           ),
-        
-        backgroundColor: Color(0xff368983),
         
       ),
       ),
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       bottomNavigationBar: BottomAppBar(
         height: 55,
-        shape: CircularNotchedRectangle(),
+        shape: const CircularNotchedRectangle(),
         child: Padding(
           padding: const EdgeInsets.only(bottom : 15),
           child: Row(
@@ -153,7 +146,7 @@ late double _fabHeight = 56.0;
                  
                  icon : Icon(
                   Icons.home,
-                  color: index_color == 0 ? Color(0xff368983) : Colors.grey,
+                  color: index_color == 0 ? const Color(0xff368983) : Colors.grey,
                 ),
                 
                 ),
@@ -166,7 +159,7 @@ late double _fabHeight = 56.0;
                 },
                 icon : Icon(
                   Icons.bar_chart_outlined,
-                  color: index_color == 1 ? Color(0xff368983) : Colors.grey,
+                  color: index_color == 1 ? const Color(0xff368983) : Colors.grey,
                 ),
                 ),
               

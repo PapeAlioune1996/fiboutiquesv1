@@ -37,7 +37,7 @@ class DataSearch extends SearchDelegate<String> {
       icon: AnimatedIcon(
         icon: AnimatedIcons.menu_arrow, 
         progress: transitionAnimation,
-        color: Color(0xff368983),
+        color: const Color(0xff368983),
         ),
         onPressed: (){
       close(context, "");
@@ -63,7 +63,7 @@ class DataSearch extends SearchDelegate<String> {
           onTap: (){
             showResults(context);
           },
-          leading: Icon(Icons.menu),
+          leading: const Icon(Icons.menu),
           title: RichText(
             text: TextSpan(
              text : suggestionList[index].substring(0,query.length),
@@ -74,7 +74,7 @@ class DataSearch extends SearchDelegate<String> {
              children: [
               TextSpan(
                 text: suggestionList[index].substring(query.length),
-                style: TextStyle( color: Color(0xff368983).withOpacity(0.2),
+                style: TextStyle( color: const Color(0xff368983).withOpacity(0.2),
                 fontWeight: FontWeight.bold
                 )
               ),

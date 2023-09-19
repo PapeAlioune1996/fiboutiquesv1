@@ -23,7 +23,7 @@ class CardItem {
   });
 }
 
-Bottom bt = new Bottom();
+Bottom bt = const Bottom();
 
 
 class _MyHomeScreeState extends State<MyHomeScree> {
@@ -90,7 +90,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                  ),
                  
                  
-                 Container(
+                 SizedBox(
                   height: 40,
                   child: Padding (
 
@@ -234,7 +234,7 @@ Widget buildProduct()   =>     SizedBox(
                                     Row(
                                       children: [
                                         IconButton(onPressed: (){},
-                                         icon : Icon(
+                                         icon : const Icon(
                                             Icons.delete,
                                             color: Colors.red,
                                             ),)
@@ -351,7 +351,7 @@ Widget buildProduct()   =>     SizedBox(
                 ),
                 ),
       child : Padding(
-        padding: EdgeInsets.all(8.0),
+        padding: const EdgeInsets.all(8.0),
         child: Row(
         mainAxisAlignment: MainAxisAlignment.spaceBetween,
         children: [
@@ -359,11 +359,11 @@ Widget buildProduct()   =>     SizedBox(
           Navigator.of(context)
           .push(MaterialPageRoute(builder: (_) => const SettingScreen()) );
          }, 
-         icon:  Icon(Icons.settings,
+         icon:  const Icon(Icons.settings,
           size: 30,
           color: Colors.white,
           ),),
-          Text(' 0.0 FCFA',
+          const Text(' 0.0 FCFA',
           style: TextStyle(
             fontSize: 15,
           color: Colors.white,
@@ -382,7 +382,7 @@ Widget buildProduct()   =>     SizedBox(
               //change color on audio listview
               //
           },
-           icon: Icon(Icons.search,
+           icon: const Icon(Icons.search,
           size: 30,
           color: Colors.white,
           ),),

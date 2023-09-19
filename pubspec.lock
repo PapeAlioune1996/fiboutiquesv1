@@ -9,14 +9,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.11.0"
-  audio_waveforms:
-    dependency: "direct main"
-    description:
-      name: audio_waveforms
-      sha256: f2f81e256c5c03b64e2861e0323a77e1b6790c256c73393b671214c9846260fc
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   audioplayers:
     dependency: "direct main"
     description:
@@ -158,14 +150,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.3"
-  flutter_riverpod:
-    dependency: "direct main"
-    description:
-      name: flutter_riverpod
-      sha256: "1bd39b04f1bcd217a969589777ca6bd642d116e3e5de65c3e6a8e8bdd8b178ec"
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.0"
   flutter_test:
     dependency: "direct dev"
     description: flutter
@@ -248,14 +232,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.9.1"
-  mime:
-    dependency: transitive
-    description:
-      name: mime
-      sha256: e4ff8e8564c03f255408decd16e7899da1733852a9110a58fe6d1b817684a63e
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.4"
   path:
     dependency: transitive
     description:
@@ -380,10 +356,50 @@ packages:
     dependency: "direct main"
     description:
       name: record
-      sha256: "8ef1d651d63a1c3fc4e297ea78e078c483f1e33b88da7044bcef63179554f092"
+      sha256: f703397f5a60d9b2b655b3acc94ba079b2d9a67dc0725bdb90ef2fee2441ebf7
       url: "https://pub.dev"
     source: hosted
-    version: "2.1.1"
+    version: "4.4.4"
+  record_linux:
+    dependency: transitive
+    description:
+      name: record_linux
+      sha256: "348db92c4ec1b67b1b85d791381c8c99d7c6908de141e7c9edc20dad399b15ce"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.4.1"
+  record_macos:
+    dependency: transitive
+    description:
+      name: record_macos
+      sha256: d1d0199d1395f05e218207e8cacd03eb9dc9e256ddfe2cfcbbb90e8edea06057
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.2.2"
+  record_platform_interface:
+    dependency: transitive
+    description:
+      name: record_platform_interface
+      sha256: "7a2d4ce7ac3752505157e416e4e0d666a54b1d5d8601701b7e7e5e30bec181b4"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
+  record_web:
+    dependency: transitive
+    description:
+      name: record_web
+      sha256: "219ffb4ca59b4338117857db56d3ffadbde3169bcaf1136f5f4d4656f4a2372d"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.5.0"
+  record_windows:
+    dependency: transitive
+    description:
+      name: record_windows
+      sha256: "42d545155a26b20d74f5107648dbb3382dbbc84dc3f1adc767040359e57a1345"
+      url: "https://pub.dev"
+    source: hosted
+    version: "0.7.1"
   rflutter_alert:
     dependency: "direct main"
     description:
@@ -392,22 +408,14 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "2.0.7"
-  riverpod:
-    dependency: transitive
-    description:
-      name: riverpod
-      sha256: a600120d6f213a9922860eea1abc32597436edd5b2c4e73b91410f8c2af67d22
-      url: "https://pub.dev"
-    source: hosted
-    version: "2.4.0"
-  share:
+  shared_storage:
     dependency: "direct main"
     description:
-      name: share
-      sha256: "97e6403f564ed1051a01534c2fc919cb6e40ea55e60a18ec23cee6e0ce19f4be"
+      name: shared_storage
+      sha256: "7c65a9d64f0f5521256be974cfd74010af12196657cec9f9fb7b03b2f11bcaf6"
       url: "https://pub.dev"
     source: hosted
-    version: "2.0.4"
+    version: "0.8.0"
   sky_engine:
     dependency: transitive
     description: flutter
@@ -429,14 +437,6 @@ packages:
       url: "https://pub.dev"
     source: hosted
     version: "1.11.0"
-  state_notifier:
-    dependency: transitive
-    description:
-      name: state_notifier
-      sha256: b8677376aa54f2d7c58280d5a007f9e8774f1968d1fb1c096adcb4792fba29bb
-      url: "https://pub.dev"
-    source: hosted
-    version: "1.0.0"
   stream_channel:
     dependency: transitive
     description:
@@ -457,18 +457,18 @@ packages:
     dependency: "direct main"
     description:
       name: syncfusion_flutter_charts
-      sha256: "9b3087a6b2e06a23ae322123a4cd6a9f06256958eee1aeceda47d043bb2dd794"
+      sha256: b1c706cea163059ecfe89132ca078f83d31e54cc99ecd1fabe4810e1b1dacc95
       url: "https://pub.dev"
     source: hosted
-    version: "22.2.12"
+    version: "23.1.36"
   syncfusion_flutter_core:
     dependency: transitive
     description:
       name: syncfusion_flutter_core
-      sha256: "9f0a4593f7642b2f106e329734d0e5fc746baf8d0a59495eec586cd0d9ba7d02"
+      sha256: aea119c8117953fa5decf4a313b431e556b0959cd35ff88f8fbdc0eda9bedb06
       url: "https://pub.dev"
     source: hosted
-    version: "22.2.12"
+    version: "23.1.36"
   synchronized:
     dependency: transitive
     description:
