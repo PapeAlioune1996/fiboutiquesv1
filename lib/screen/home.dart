@@ -1,9 +1,17 @@
 
+
+import 'dart:io';
+
+import 'package:audioplayers/audioplayers.dart';
 import 'package:fiboutiquesv1/screen/settings.dart';
-import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:fiboutiquesv1/widgets/search_data.dart';
 import 'package:flutter/material.dart';
+
+import 'package:path_provider/path_provider.dart';
+import 'package:permission_handler/permission_handler.dart';
+import 'package:record/record.dart';
 import 'package:percent_indicator/linear_percent_indicator.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class MyHomeScree extends StatefulWidget {
   const MyHomeScree({super.key});
@@ -12,59 +20,139 @@ class MyHomeScree extends StatefulWidget {
   State<MyHomeScree> createState() => _MyHomeScreeState();
 }
 
-class CardItem {
-  final String title;
-  final String subtitle;
-  
-
-  const CardItem({
-    required this.title,
-    required this.subtitle,
-  });
-}
-
-Bottom bt = const Bottom();
 
 
 class _MyHomeScreeState extends State<MyHomeScree> {
 
   Color mcolor = const Color(0xff368983);
+ 
+    AudioPlayer audioPlayer = AudioPlayer();
+  bool isRecording = false;
+  bool isPlaying = false;
+  String currentRecordingPath = '';
+  List<String> audioPaths = [];
 
-  var history;
-  final List<String> day = [
-    'Monday',
-    "Tuesday",
-    "Wednesday",
-    "Thursday",
-    'friday',
-    'saturday',
-    'sunday'
-  ];
+  @override
+  void initState() {
+    super.initState();
+    loadAudioPaths();
+  }
 
-  List<CardItem> items = [
-    const CardItem(
-      title : '2:30',
-      subtitle : 'naudio',
-    ),
-    const CardItem(
-      title : '1:30',
-      subtitle : 'naudio',
-    ),
-    const CardItem(
-      title : '2:50',
-      subtitle : 'naudio',
-    ),
-    const CardItem(
-      title : '6:00',
-      subtitle : 'naudio',
-    )
-  ];
+  // Shared Preferences
+  Future<void> loadAudioPaths() async {
+    final prefs = await SharedPreferences.getInstance();
+    final savedAudioPaths = prefs.getStringList('audioPaths') ?? [];
+    setState(() {
+      audioPaths = savedAudioPaths;
+    });
+  }
+
+  Future<void> saveAudioPaths() async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setStringList('audioPaths', audioPaths);
+  }
+
+  Future<void> _loadAudioFiles() async {
+    final directory = await getApplicationDocumentsDirectory();
+    final files = await directory.list().toList();
+    setState(() {
+      audioPaths = files
+          .where((file) => file is File && file.path.endsWith('.wav'))
+          .map((file) => file.path)
+          .toList();
+    });
+  }
+
+  Future<void> _startRecording() async {
+    if (await Permission.microphone.request().isGranted) {
+      final directory = await getApplicationDocumentsDirectory();
+      final timestamp = DateTime.now().millisecondsSinceEpoch;
+      final filePath = '${directory.path}/audio_$timestamp.wav';
+
+      await Record().start(
+        path: filePath,
+        encoder: AudioEncoder.wav,
+      );
+
+      setState(() {
+        isRecording = true;
+        currentRecordingPath = filePath;
+      });
+    } else {
+      // Handle permission not granted
+    }
+  }
+
+  Future<void> _stopRecording() async {
+    await Record().stop();
+    setState(() {
+      isRecording = false;
+    });
+    _loadAudioFiles();
+  }
+
+   Future<void> _playAudio(String path ) async {
+    if (!isPlaying) {
+      await audioPlayer.play(path as Source);
+      setState(() {
+        isPlaying = true;
+      });
+    } else {
+      await audioPlayer.stop();
+      setState(() {
+        isPlaying = false;
+      });
+    }
+  
+}
+
+  @override
+  void dispose() {
+    audioPlayer.dispose();
+    super.dispose();
+  }
+
+  Future<void> _checkPermissions() async {
+    if (!(await Permission.microphone.isGranted)) {
+      await Permission.microphone.request();
+    }
+  }
+ 
+
+ 
 
  
   @override
   Widget build(BuildContext context) {
 
     return Scaffold(
+      
+      floatingActionButton: AnimatedContainer(
+        duration: const Duration(milliseconds: 300),
+       // height: fabHeight,
+        child : FloatingActionButton( 
+      autofocus: true,
+        clipBehavior: Clip.none,
+        shape: const CircleBorder(eccentricity: 0.1),
+        onPressed: ()  {
+           if (isRecording) {
+            _stopRecording();
+          } else {
+           _startRecording();
+          }
+        },
+        
+        backgroundColor: const Color(0xff368983),
+        child: isRecording ? const Icon(
+          Icons.stop_circle_outlined,
+          color: Colors.white,
+          ) : const Icon(Icons.mic_none_outlined,
+            color: Colors.white,
+          ),
+        
+      ),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       body: SafeArea(
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.center,
@@ -74,20 +162,74 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                 const SizedBox(
                         height: 10,
                       ),
+            ///listviw audio     
                  
-                 Container(
-                 color: Colors.grey.withOpacity(0.1),
-                  height: 100,
-                  
-                  child: ListView.separated(
-                    
-                  padding: const EdgeInsets.all(8) ,                 
-                  scrollDirection: Axis.horizontal,
-                  itemCount: 4,
-                  separatorBuilder: (context, index) => const SizedBox(width: 12,),
-                  itemBuilder: (context, index) => builderCard(item : items[index] ),
-                 ),
-                 ),
+             
+Visibility(
+  visible: audioPaths != null && audioPaths.isNotEmpty,
+  child : Container(
+  color: Colors.grey.withOpacity(0.1),
+  height: 100,
+ // padding: EdgeInsets.all(8),
+  child: ListView.builder(
+    scrollDirection: Axis.horizontal,
+    itemCount: audioPaths.length,
+    itemBuilder: (context, index) {
+      final audioPath = audioPaths[index];
+      return Container(
+          
+        width: 200, // Set a finite width for each ListTile
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Flexible(
+              child: Padding(
+                padding: const EdgeInsets.all(8),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text('2:30'),
+                    IconButton(onPressed: () {
+                      
+                      setState(() {
+                        audioPaths.removeAt(index);
+                        saveAudioPaths();
+                      });
+                    }, icon: Icon(Icons.close)),
+                  ],
+                ),
+              ),
+            ),
+            Flexible(
+              flex: 2, // Adjust the flex factor as needed
+              child: Padding(
+                padding: const EdgeInsets.only(left: 5, right: 5, bottom: 15),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.start,
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        _playAudio(audioPath);
+                      },
+                      icon: isPlaying ? Icon(Icons.stop) : Icon(Icons.play_arrow),
+                      color: Colors.black.withOpacity(0.3),
+                    ),
+                    LinearPercentIndicator(
+                      width: 140,
+                    )
+                  ],
+                ),
+              ),
+            ),
+          ],
+        ),
+      );
+    },
+  ),
+),
+ ),
+
+
                  
                  
                  SizedBox(
@@ -248,57 +390,7 @@ Widget buildProduct()   =>     SizedBox(
                         ),
                       );
   //
-  Widget builderCard({required CardItem item,}) => 
-                  Container(
-                        width: 200,
-                        
-                        color: Colors.white54,
-                        child: Column(
-                         
-                          children: [
-                           Padding(
-                            padding: const EdgeInsets.all(10),
-                           child : Row(
-                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                            
-                            children: [
-                              Text(item.title),
-                              GestureDetector(
-                                onTap: (){
-                                  //delete audio from list
-                                },
-                                child : Icon(
-                                  Icons.close,
-                               color: Colors.black.withOpacity(0.3),
-                              
-                               ),
-                              ),
-
-                               
-                                  ],
-                                ),
-                                
-                           ),
-
-                             Padding(
-                             padding: const EdgeInsets.only(left: 5, right: 5, bottom: 5),
-                             child : Row(
-                             
-                            mainAxisAlignment: MainAxisAlignment.start,
-                            children: [
-                              Icon(Icons.play_arrow,
-                               color: Colors.black.withOpacity(0.3),
-                              ),
-                              LinearPercentIndicator(
-                                      width: 140,
-                                    )
-                            ],
-                           ),
-                             ),
-                    
-                          ],
-                        ),
-                      );
+  
 
   Widget getList(String history, int index) {
     return Dismissible(
