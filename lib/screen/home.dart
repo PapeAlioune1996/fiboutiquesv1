@@ -32,11 +32,20 @@ class _MyHomeScreeState extends State<MyHomeScree> {
   String currentRecordingPath = '';
   List<String> audioPaths = [];
 
-  @override
+  /*@override
   void initState() {
     super.initState();
     loadAudioPaths();
+  }*/
+  @override
+  void initState() {
+    _loadAudioFiles();
+    super.initState();
   }
+
+ 
+
+
 
   // Shared Preferences
   Future<void> loadAudioPaths() async {
@@ -91,9 +100,10 @@ class _MyHomeScreeState extends State<MyHomeScree> {
     _loadAudioFiles();
   }
 
-   Future<void> _playAudio(String path ) async {
+   Future<void> _playAudio( ) async {
     if (!isPlaying) {
-      await audioPlayer.play(path as Source);
+      Source urlSource = UrlSource(currentRecordingPath);
+      await audioPlayer.play(urlSource);
       setState(() {
         isPlaying = true;
       });
@@ -209,7 +219,7 @@ Visibility(
                   children: [
                     IconButton(
                       onPressed: () {
-                        _playAudio(audioPath);
+                        _playAudio();
                       },
                       icon: isPlaying ? Icon(Icons.stop) : Icon(Icons.play_arrow),
                       color: Colors.black.withOpacity(0.3),
