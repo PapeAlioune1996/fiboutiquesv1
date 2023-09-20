@@ -26,17 +26,14 @@ class _MyHomeScreeState extends State<MyHomeScree> {
 
   Color mcolor = const Color(0xff368983);
  
-    AudioPlayer audioPlayer = AudioPlayer();
+  AudioPlayer audioPlayer= AudioPlayer();
+ 
   bool isRecording = false;
   bool isPlaying = false;
   String currentRecordingPath = '';
   List<String> audioPaths = [];
 
-  /*@override
-  void initState() {
-    super.initState();
-    loadAudioPaths();
-  }*/
+  
   @override
   void initState() {
     _loadAudioFiles();
@@ -82,11 +79,14 @@ class _MyHomeScreeState extends State<MyHomeScree> {
         path: filePath,
         encoder: AudioEncoder.wav,
       );
+     print(filePath);
 
       setState(() {
         isRecording = true;
         currentRecordingPath = filePath;
+        audioPaths.add(currentRecordingPath);
       });
+      print(audioPaths);
     } else {
       // Handle permission not granted
     }
@@ -100,9 +100,9 @@ class _MyHomeScreeState extends State<MyHomeScree> {
     _loadAudioFiles();
   }
 
-   Future<void> _playAudio( ) async {
+   Future<void> _playAudio(String path) async {
     if (!isPlaying) {
-      Source urlSource = UrlSource(currentRecordingPath);
+      Source urlSource = UrlSource(path);
       await audioPlayer.play(urlSource);
       setState(() {
         isPlaying = true;
@@ -118,7 +118,8 @@ class _MyHomeScreeState extends State<MyHomeScree> {
 
   @override
   void dispose() {
-    audioPlayer.dispose();
+   audioPlayer.dispose();
+    //audioRecord.dispose();
     super.dispose();
   }
 
@@ -219,7 +220,7 @@ Visibility(
                   children: [
                     IconButton(
                       onPressed: () {
-                        _playAudio();
+                        _playAudio(audioPath);
                       },
                       icon: isPlaying ? Icon(Icons.stop) : Icon(Icons.play_arrow),
                       color: Colors.black.withOpacity(0.3),
