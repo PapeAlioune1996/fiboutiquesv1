@@ -1,7 +1,10 @@
 
 
+import 'package:fiboutiquesv1/screen/Providers/audio_rec_play_provider.dart';
 import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:provider/provider.dart';
 
 void main() async {
 
@@ -15,14 +18,22 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     
-    return MaterialApp(
-      title: 'Flutter Demo',
-      debugShowCheckedModeBanner: false,
-      theme: ThemeData(
-       colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        useMaterial3: true,
+    return ScreenUtilInit(
+      designSize: const Size(393, 759),
+      builder: (context, child) => MultiProvider(
+        providers: [
+          ChangeNotifierProvider(create: (context) => AudioProvider())
+        ],
+        child: MaterialApp(
+          title: 'Flutter Demo',
+          debugShowCheckedModeBanner: false,
+          theme: ThemeData(
+           colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
+            useMaterial3: true,
+          ),
+          home: const Bottom(),
+        ),
       ),
-      home: const Bottom(),
     );
   }
 }
