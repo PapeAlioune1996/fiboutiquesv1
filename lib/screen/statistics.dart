@@ -120,7 +120,7 @@ class _StatisticsState extends State<Statistics> {
             ],
           ),
         ),
-        SliverList(
+        /*SliverList(
             delegate: SliverChildBuilderDelegate(
           (context, index) {
             return ListTile(
@@ -132,7 +132,7 @@ class _StatisticsState extends State<Statistics> {
           },
          // childCount: a.length,
         ),
-        )
+        )*/
       ],
     );
   }

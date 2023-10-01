@@ -4,6 +4,7 @@ import 'dart:io';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
+import 'package:fluttertoast/fluttertoast.dart';
 import 'package:path_provider/path_provider.dart';
 
 class AudioProvider extends ChangeNotifier {
@@ -27,11 +28,18 @@ class AudioProvider extends ChangeNotifier {
 
   late DateTime time;
   int selectedIndex = -1;
+  //initialise
+    AudioProvider() {
+    recorderController = RecorderController();
+    fileList = []; 
+   time = DateTime.now();
+  }
 
   void getTimeNow() {
     Timer.periodic(const Duration(milliseconds: 1), (timer) async {
       recorderController.refresh();
       time = DateTime.now();
+      
       notifyListeners();
     });
   }
@@ -72,11 +80,13 @@ class AudioProvider extends ChangeNotifier {
           isRecordingCompleted = true;
           debugPrint(path);
           notifyListeners();
+          Fluttertoast.showToast(msg: "Audio ajouter avec success");
           debugPrint("Recorded file size: ${File(path).lengthSync()}");
         }else{
           // ignore: use_build_context_synchronously
           showDialog(context: context,
             barrierDismissible: false,builder: (context) {
+             
             Timer(const Duration(seconds: 1), () {
               Navigator.pop(context);
             });
