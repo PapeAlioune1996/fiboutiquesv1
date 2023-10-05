@@ -1,7 +1,6 @@
 import 'package:circular_bottom_navigation/circular_bottom_navigation.dart';
 import 'package:circular_bottom_navigation/tab_item.dart';
 import 'package:fiboutiquesv1/screen/home.dart';
-import 'package:fiboutiquesv1/screen/orders_screen.dart';
 import 'package:fiboutiquesv1/screen/statistics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -10,24 +9,20 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 class Bottom extends StatefulWidget {
   const Bottom({Key? key}) : super(key: key);
 
-  set _fabHeight(double fabHeight) {}
-
   @override
   State<Bottom> createState() => _BottomState();
 }
 
 class _BottomState extends State<Bottom> {
+  // ignore: non_constant_identifier_names
   int index_color = 0;
-  List Screen = [const MyHomeScree(), const Statistics()];
-
-  //late final RecorderController recorderController;
+  List screen = [const MyHomeScree(), const Statistics()];
 
   late CircularBottomNavigationController navigationController;
 
   @override
   void initState() {
     navigationController = CircularBottomNavigationController(index_color);
-    // TODO: implement initState
     super.initState();
   }
 
@@ -35,7 +30,7 @@ class _BottomState extends State<Bottom> {
   Widget build(BuildContext context) {
     return Scaffold(
       resizeToAvoidBottomInset: false,
-      body: Screen[index_color],
+      body: screen[index_color],
       bottomNavigationBar: CircularBottomNavigation(
         controller: navigationController,
         barBackgroundColor: const Color(0xff368983),

@@ -15,7 +15,6 @@ class _OrdersScreenState extends State<OrdersScreen> {
   @override
   void initState() {
     Provider.of<DatabaseProvider>(context, listen: false).getOrders();
-    // TODO: implement initState
     super.initState();
   }
 
@@ -52,7 +51,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             const Text(
                                 "Product Name :",style: TextStyle(color: Colors.white)),
                             Text(
-                                "${databaseProvider.ordersDetails[index]["productName"]}",style: TextStyle(color: Colors.white)),
+                                "${databaseProvider.ordersDetails[index]["productName"]}",style: const TextStyle(color: Colors.white)),
                           ],
                         ),
                         Column(
@@ -60,7 +59,7 @@ class _OrdersScreenState extends State<OrdersScreen> {
                             const Text(
                                 "Order No.",style: TextStyle(color: Colors.white)),
                             Text(
-                                "${databaseProvider.ordersDetails[index]["orderNo"]}",style: TextStyle(color: Colors.white)),
+                                "${databaseProvider.ordersDetails[index]["orderNo"]}",style: const TextStyle(color: Colors.white)),
                           ],
                         ),
                       ],
@@ -71,11 +70,11 @@ class _OrdersScreenState extends State<OrdersScreen> {
                         alignment: WrapAlignment.spaceEvenly,
                         spacing: 20.w,
                         children: [
-                          Text("Selling Price : ${databaseProvider.ordersDetails[index]["sellingPrice"]}",style: TextStyle(color: Colors.white)),
-                          Text("Buying Price : ${databaseProvider.ordersDetails[index]["buyingPrice"]}",style: TextStyle(color: Colors.white)),
-                          Text("Quantity : ${databaseProvider.ordersDetails[index]["quantity"]}",style: TextStyle(color: Colors.white)),
-                          Text("Total Price : ${databaseProvider.ordersDetails[index]["totalPrice"]}",style: TextStyle(color: Colors.white)),
-                          Text("Date : ${databaseProvider.ordersDetails[index]["date"]}",style: TextStyle(color: Colors.white)),
+                          Text("Selling Price : ${databaseProvider.ordersDetails[index]["sellingPrice"]}",style: const TextStyle(color: Colors.white)),
+                          Text("Buying Price : ${databaseProvider.ordersDetails[index]["buyingPrice"]}",style: const TextStyle(color: Colors.white)),
+                          Text("Quantity : ${databaseProvider.ordersDetails[index]["quantity"]}",style: const TextStyle(color: Colors.white)),
+                          Text("Total Price : ${databaseProvider.ordersDetails[index]["totalPrice"]}",style: const TextStyle(color: Colors.white)),
+                          Text("Date : ${databaseProvider.ordersDetails[index]["date"]}",style: const TextStyle(color: Colors.white)),
                         ],
                       ),
                     ),

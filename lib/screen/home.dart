@@ -10,7 +10,7 @@ import 'package:provider/provider.dart';
 
 import '../Providers/audio_rec_play_provider.dart';
 import '../Providers/database_provider.dart';
-import '../Providers/home_screen_provider.dart';
+
 class MyHomeScree extends StatefulWidget {
   const MyHomeScree({super.key});
 
@@ -19,6 +19,9 @@ class MyHomeScree extends StatefulWidget {
 }
 
 class _MyHomeScreeState extends State<MyHomeScree> {
+ 
+double totalPrice = 0.0;
+  
   @override
   void initState() {
     Timer(const Duration(milliseconds: 1), () {
@@ -26,11 +29,10 @@ class _MyHomeScreeState extends State<MyHomeScree> {
           .initialiseControllers();
       Provider.of<AudioProvider>(context, listen: false).getDir();
       Provider.of<DatabaseProvider>(context, listen: false).getData();
-      Provider.of<HomeScreenProvider>(context, listen: false)
-          .addAllToFiltered();
       Provider.of<AudioProvider>(context, listen: false).initPlayer();
+
     });
-    // TODO: implement initState
+    
     super.initState();
   }
 
@@ -46,7 +48,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
 
   @override
   Widget build(BuildContext context) {
-
+    
     return Scaffold(
       floatingActionButton: Consumer<AudioProvider>(
         builder: (context, audioProvider, child) => Container(
@@ -72,40 +74,18 @@ class _MyHomeScreeState extends State<MyHomeScree> {
               iconSize: 35.sp,
             ),
             Visibility(
-                visible: audioProvider.isRecording,
-                child: AudioWaveforms(
-                  size: Size(250.w, 50.h),
-                  recorderController: audioProvider.recorderController,
-                  waveStyle: WaveStyle(
-                    waveColor: mcolor,
-                    extendWaveform: true,
-                    showMiddleLine: false,
-                  ),
+              visible: audioProvider.isRecording,
+              child: AudioWaveforms(
+                size: Size(250.w, 50.h),
+                recorderController: audioProvider.recorderController,
+                waveStyle: WaveStyle(
+                  waveColor: mcolor,
+                  extendWaveform: true,
+                  showMiddleLine: false,
                 ),
-                ),
-            // AnimatedSwitcher(
-            //   duration: const Duration(milliseconds: 1000),
-            //   switchInCurve: Curves.bounceOut,
-            //   layoutBuilder: (currentChild, previousChildren) =>
-            //       audioProvider.isRecording
-            //           ? AudioWaveforms(
-            //               size: Size(250.w, 50.h),
-            //               recorderController: audioProvider.recorderController,
-            //               waveStyle: WaveStyle(
-            //                 waveColor: Colors.green.shade600,
-            //                 extendWaveform: true,
-            //                 showMiddleLine: false,
-            //               ),
-            //             )
-            //           : Text(
-            //               "Please try again",
-            //               style: TextStyle(
-            //                 color: Colors.green.shade600,
-            //                 fontSize: 20.sp,
-            //                 fontWeight: FontWeight.w400,
-            //               ),
-            //             ),
-            // ),
+              ),
+            ),
+            
           ]),
         ),
       ),
@@ -117,7 +97,8 @@ class _MyHomeScreeState extends State<MyHomeScree> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                const HomeAppBar(),
+                 HomeAppBar(totalPrice: totalPrice),
+
                 const SizedBox(
                   height: 10,
                 ),
@@ -209,9 +190,26 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                                         ),
                                       ),
                                 SizedBox(width: 10.w),
+                               
                                 IconButton(
                                     onPressed: () {
-                                      Fluttertoast.showToast(msg: "Audio supprimmer avec succes");
+                                     //update
+                                    },
+                                    icon: CircleAvatar(
+                                        backgroundColor: mcolor,
+                                        radius: 15.r,
+                                        child: Icon(
+                                          Icons.update,
+                                          size: 20.sp,
+                                          color: Colors.white,
+                                        ),
+                                        ),
+                                        ),
+                                         SizedBox(width: 10.w),
+                                IconButton(
+                                    onPressed: () {
+                                      Fluttertoast.showToast(
+                                          msg: "Audio supprimmer avec succes");
                                       audioProvider.deleteAudio(index);
                                     },
                                     icon: CircleAvatar(
@@ -221,7 +219,9 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                                           Icons.close,
                                           size: 20.sp,
                                           color: Colors.white,
-                                        )))
+                                        ),
+                                        ),
+                                        ),
                               ],
                             ),
                           );
@@ -232,168 +232,251 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                 ),
 
                 SizedBox(
-                  height: 40,
+                  height: 50,
                   child: Padding(
                     padding: const EdgeInsets.all(10),
                     child: Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
+                         Consumer<DatabaseProvider>(
+  builder: (context, databaseProvider, child) =>
+                              databaseProvider.selectedProducts.isEmpty ? Container()
+      : Stack(
+      children: [
+        IconButton(
+          onPressed: () {
+            databaseProvider.saveOrder();
+          },
+          icon: Icon(
+            Icons.shopping_cart,
+            color: mcolor,
+            size: 25,
+            shadows: const [
+              BoxShadow(
+                blurRadius: 2,
+              ),
+            ],
+          ),
+        ),
+    Positioned(
+      right: 12,
+      top: 5,
+      child: Container(
+        padding: const EdgeInsets.all(3),
+        decoration: const BoxDecoration(
+          shape: BoxShape.circle,
+          color: Colors.red, // You can customize the badge background color
+        ),
+        child: Text(
+          databaseProvider.productCount.toString(), // You can replace this with the actual count of items dynamically
+          style: const TextStyle(
+            color: Colors.white,
+            fontSize: 8,
+          ),
+        ),
+      ),
+    ),
+  ],
+),
+
+),
                         Consumer<DatabaseProvider>(
-                          builder: (context, databaseProvider, child) => databaseProvider.selectedIndex == -1 ? Container() : IconButton(
-                            onPressed: () {
-                              databaseProvider.saveOrder();
-                            },
-                            icon: Icon(
-                              Icons.shopping_cart,
-                              color: mcolor,
-                              size: 25,
-                              shadows: const [
-                                BoxShadow(
-                                  blurRadius: 2,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ),
-                        Consumer<DatabaseProvider>(
-                          builder: (context, databaseProvider, child) => IconButton(
-                              icon: Icon(
-                                Icons.add,
-                                color: mcolor,
-                                size: 25,
-                                shadows: const [
-                                  BoxShadow(
-                                    blurRadius: 2,
+                          builder: (context, databaseProvider, child) =>
+                              IconButton(
+                                  icon: Icon(
+                                    Icons.add,
+                                    color: mcolor,
+                                    size: 25,
+                                    shadows: const [
+                                      BoxShadow(
+                                        blurRadius: 2,
+                                      ),
+                                    ],
                                   ),
-                                ],
-                              ),
-                              onPressed: () {
-                                databaseProvider.addProductDialog(context, mcolor);
-                              }),
+                                  onPressed: () {
+                                    databaseProvider.addProductDialog(
+                                        context, mcolor);
+                                  }),
                         ),
                       ],
                     ),
                   ),
                 ),
-                //
-                SizedBox(
-                  width: 400,
-                  // padding: EdgeInsets.all(12),
+              ///////////////////////////////
+                Consumer<DatabaseProvider>(
+                  builder: (context, databaseProvider, child) {
+                    
+                      databaseProvider.generateControllers(databaseProvider.selectedProducts);
+                    
+                    var product = databaseProvider.selectedProducts.toString();
+                   if (databaseProvider.selectedProducts.isEmpty) {
+                       totalPrice = 0; // Set totalPrice to 0 when selectedProducts list is empty
+                       }
+                   print(product);
+                    return Expanded(
+                        child: ListView.builder(
+                        itemCount:
+                     databaseProvider.selectedProducts.length,
+                    itemBuilder: (context, index) {
+                          databaseProvider.setText(index);
+                      return Row(
+                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                        children: [
+                          Text(databaseProvider.selectedProducts.isEmpty
+                              ? "not selected"
+                              : databaseProvider.selectedProducts[index]["name"]),
+                          Flexible(
+                            child: SizedBox(
+                              width: 80,
+                              height: 35, // Add this line
+                              child: TextField(
+                                controller: databaseProvider
+                                    .productSellingPriceController1[index],
+                                keyboardType: TextInputType.number,
+                                  
+                                decoration: InputDecoration(
+                                  labelText: 'selling price',
+                                  labelStyle: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: Colors.grey.shade500),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius:
+                                    BorderRadius.circular(10.r),
+                                    borderSide: BorderSide(
+                                        width: 2.w,
+                                        color: const Color(0xffC5C5C5)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        width: 2, color: Color(0xff368983)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Flexible(
+                            flex: 1,
+                            child: SizedBox(
+                              width: 80,
+                              height: 35,
+                              // Add this line
+                              child: TextField(
+                                controller: databaseProvider
+                                    .productBuyingPriceController1[index],
+                                keyboardType: TextInputType.number,
+                                decoration: InputDecoration(
+                                  labelText: 'Buying Price',
+                                  labelStyle: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: Colors.grey.shade500),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        width: 2, color: Color(0xffC5C5C5)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        width: 2, color: Color(0xff368983)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Flexible(
+                            flex: 1,
+                            child: SizedBox(
+                              width: 80,
+                              height: 35,
+                              // Add this line
+                              child: TextField(
+                                controller: databaseProvider.productQuantityController[index],
+                                    
+                                keyboardType: TextInputType.number,
+                                onChanged: (newQuantity) {
+    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+    double quantity = double.parse(newQuantity);
 
-                  child: Column(
-                    mainAxisAlignment: MainAxisAlignment.start,
-                    children: [
-                      Consumer<DatabaseProvider>(
-                          builder: (context, databaseProvider, child) => Visibility(
-                              visible: databaseProvider.selectedIndex != -1,
-                              child: Row(
-                                mainAxisAlignment: MainAxisAlignment.spaceAround,
+    double individualTotalPrice = sellingPrice * quantity;
+
+    // Subtract the old individualTotalPrice from totalPrice
+    totalPrice -= individualTotalPrice;
+
+    // Update individualTotalPrice with the new value
+    individualTotalPrice = sellingPrice * quantity;
+
+    // Add the new individualTotalPrice to totalPrice
+    totalPrice += individualTotalPrice;
+
+    // Print the updated total price
+    print('total price so far: $totalPrice');
+  },
+                                onEditingComplete: () {
+                           double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                           double quantity = double.parse(databaseProvider.productQuantityController[index].text);
+                          double individualTotalPrice = sellingPrice * quantity;
+                           print('total price for product $index: $individualTotalPrice');
+                           totalPrice += individualTotalPrice; 
+                          
+                           // Add individual product price to total price
+                           print('total price so far: $totalPrice');
+ 
+},
+
+                               decoration: InputDecoration(
+                                  labelText: 'Quantity',
+                                  labelStyle: TextStyle(
+                                      fontSize: 10.sp,
+                                      color: Colors.grey.shade500),
+                                  enabledBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        width: 2, color: Color(0xffC5C5C5)),
+                                  ),
+                                  focusedBorder: OutlineInputBorder(
+                                    borderRadius: BorderRadius.circular(10),
+                                    borderSide: const BorderSide(
+                                        width: 2, color: Color(0xff368983)),
+                                  ),
+                                ),
+                              ),
+                            ),
+                          ),
+                          Column(
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              Row(
                                 children: [
-                                  Text(databaseProvider.selectedIndex == -1 ? "not selected" : databaseProvider.selectedText.text),
-                                  Flexible(
-                                    child: SizedBox(
-                                      width: 80,
-                                      height: 35, // Add this line
-                                      child: TextField(
-                                        controller: databaseProvider.productSellingPriceController1,
-                                        decoration: InputDecoration(
-                                          labelText: 'selling price',
-                                          labelStyle: TextStyle(
-                                              fontSize: 10.sp, color: Colors.grey.shade500),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10.r),
-                                            borderSide: BorderSide(
-                                                width: 2.w, color: Color(0xffC5C5C5)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                            borderSide: const BorderSide(
-                                                width: 2, color: Color(0xff368983)),
-                                          ),
-                                        ),
-                                      ),
+                                  IconButton(
+                                    onPressed: () {
+                                    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                                    double quantity = double.parse(databaseProvider.productQuantityController[index].text);
+                                    double individualTotalPrice = sellingPrice * quantity;
+                                    totalPrice -= individualTotalPrice;
+    
+                                    databaseProvider.removeSelectedProduct(index);
+                                    print('total price after deletion: $totalPrice');
+                                       },
+                                    icon: const Icon(
+                                      Icons.delete,
+                                      color: Colors.red,
                                     ),
                                   ),
-                                  Flexible(
-                                    flex: 1,
-                                    child: SizedBox(
-                                      width: 80,
-                                      height: 35,
-                                      // Add this line
-                                      child: TextField(
-                                        controller: databaseProvider.productBuyingPriceController1,
-                                        decoration: InputDecoration(
-                                          labelText: 'Buying Price',
-                                          labelStyle: TextStyle(
-                                              fontSize: 10.sp, color: Colors.grey.shade500),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                            borderSide: const BorderSide(
-                                                width: 2, color: Color(0xffC5C5C5)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                            borderSide: const BorderSide(
-                                                width: 2, color: Color(0xff368983)),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Flexible(
-                                    flex: 1,
-                                    child: SizedBox(
-                                      width: 80,
-                                      height: 35,
-                                      // Add this line
-                                      child: TextField(
-                                        controller: databaseProvider.productQuantityController,
-                                        keyboardType: TextInputType.phone,
-                                        decoration: InputDecoration(
-                                          labelText: 'Quantity',
-                                          labelStyle: TextStyle(
-                                              fontSize: 10.sp, color: Colors.grey.shade500),
-                                          enabledBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                            borderSide: const BorderSide(
-                                                width: 2, color: Color(0xffC5C5C5)),
-                                          ),
-                                          focusedBorder: OutlineInputBorder(
-                                            borderRadius: BorderRadius.circular(10),
-                                            borderSide: const BorderSide(
-                                                width: 2, color: Color(0xff368983)),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Column(
-                                    mainAxisAlignment: MainAxisAlignment.end,
-                                    children: [
-                                      Row(
-                                        children: [
-                                          IconButton(
-                                            onPressed: () {
-                                              databaseProvider.deleteData();
-                                            },
-                                            icon: const Icon(
-                                              Icons.delete,
-                                              color: Colors.red,
-                                            ),
-                                          )
-                                        ],
-                                      )
-                                    ],
-                                  )
                                 ],
                               ),
-                              ),
-                              ),
-                    ],
+                            ],
+                          ),
+                        ],
+                      );
+                    },
                   ),
+                  );
+                  },
                 ),
               ],
             ),
+            ////////////////////////
             // Align(
             //   alignment: Alignment.bottomCenter,
             //   child: Consumer<AudioProvider>(
@@ -463,48 +546,50 @@ class _MyHomeScreeState extends State<MyHomeScree> {
     );
   }
 
-  //
-  // Widget buildProduct(BuildContext context) => ;
+//
+// Widget buildProduct(BuildContext context) => ;
 
-  //
+//
 
-  // Widget getList(String history, int index) {
-  //   return Dismissible(
-  //       key: UniqueKey(),
-  //       onDismissed: (direction) {
-  //         //  history.delete();
-  //       },
-  //       child: get(index, history));
-  // }
-  //
-  // ListTile get(int index, String history) {
-  //   return ListTile(
-  //     leading: ClipRRect(
-  //       borderRadius: BorderRadius.circular(5),
-  //       //child: Image.asset('images/${history.name}.png', height: 40),
-  //     ),
-  //     title: const Text(
-  //       // history.name,
-  //       'historyname',
-  //       style: TextStyle(
-  //         fontSize: 17,
-  //         fontWeight: FontWeight.w600,
-  //       ),
-  //     ),
-  //     subtitle: const Text(
-  //       'historydate',
-  //       style: TextStyle(
-  //         fontWeight: FontWeight.w600,
-  //       ),
-  //     ),
-  //     trailing: const Text(
-  //       // history.amount,
-  //       'Total price',
-  //       style: TextStyle(
-  //         fontWeight: FontWeight.w600,
-  //         fontSize: 19,
-  //       ),
-  //     ),
-  //   );
-  // }
+// Widget getList(String history, int index) {
+//   return Dismissible(
+//       key: UniqueKey(),
+//       onDismissed: (direction) {
+//         //  history.delete();
+//       },
+//       child: get(index, history));
+// }
+//
+// ListTile get(int index, String history) {
+//   return ListTile(
+//     leading: ClipRRect(
+//       borderRadius: BorderRadius.circular(5),
+//       //child: Image.asset('images/${history.name}.png', height: 40),
+//     ),
+//     title: const Text(
+//       // history.name,
+//       'historyname',
+//       style: TextStyle(
+//         fontSize: 17,
+//         fontWeight: FontWeight.w600,
+//       ),
+//     ),
+//     subtitle: const Text(
+//       'historydate',
+//       style: TextStyle(
+//         fontWeight: FontWeight.w600,
+//       ),
+//     ),
+//     trailing: const Text(
+//       // history.amount,
+//       'Total price',
+//       style: TextStyle(
+//         fontWeight: FontWeight.w600,
+//         fontSize: 19,
+//       ),
+//     ),
+//   );
+// }
 }
+
+

@@ -29,11 +29,7 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
 
-  ////////////////////////////:
-  ///
-  ///
-  ///
-  
+  // ignore: non_constant_identifier_names  
   Container main_container() {
     return Container(
       decoration: BoxDecoration(
@@ -127,6 +123,7 @@ class _SettingScreenState extends State<SettingScreen> {
   }
 
   
+  // ignore: non_constant_identifier_names
   Column background_container(BuildContext context) {
     return Column(
       children: [

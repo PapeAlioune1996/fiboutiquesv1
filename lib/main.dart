@@ -8,7 +8,6 @@ import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
 
 import 'Providers/audio_rec_play_provider.dart';
-import 'Providers/home_screen_provider.dart';
 late Box products ;
 late Box orders ;
 void main() async {
@@ -34,7 +33,6 @@ class MyApp extends StatelessWidget {
         providers: [
           ChangeNotifierProvider(create: (context) => AudioProvider()),
           ChangeNotifierProvider(create: (context) => DatabaseProvider()),
-          ChangeNotifierProvider(create: (context) => HomeScreenProvider()),
         ],
         child: MaterialApp(
           title: 'Flutter Demo',

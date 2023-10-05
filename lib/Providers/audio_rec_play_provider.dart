@@ -52,7 +52,7 @@ class AudioProvider extends ChangeNotifier {
     fileList = files.where((element) => element.path.endsWith("m4a")).toList();
     notifyListeners();
     path = "${appDirectory.path}/New Audio ${time.day}${time.millisecond}${time.second}.m4a";
-    print(path);
+   // print(path);
     isLoading = false;
     notifyListeners();
   }
@@ -67,6 +67,7 @@ class AudioProvider extends ChangeNotifier {
       ..iosEncoder = IosEncoder.kAudioFormatMPEG4AAC
       ..sampleRate = 44100;
     notifyListeners();
+    // ignore: avoid_print
     print("initiazed................========>>>>>>>>>");
   }
 
@@ -125,7 +126,7 @@ class AudioProvider extends ChangeNotifier {
     Uri fileUri =
     Uri.parse("file://$encodedFilePath"); // Create URL with encoded path
     String fileUrl = fileUri.toString(); // This will give you a valid file URL
-    print("path ================== $fileUrl");
+   // print("path ================== $fileUrl");
     await playerController.preparePlayer(
       path: fileUrl,
       shouldExtractWaveform: true,

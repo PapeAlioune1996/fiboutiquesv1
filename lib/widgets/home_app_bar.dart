@@ -1,5 +1,6 @@
+// ignore_for_file: avoid_print
+
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
-import 'package:fiboutiquesv1/main.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -8,10 +9,13 @@ import 'package:provider/provider.dart';
 import '../screen/settings.dart';
 
 class HomeAppBar extends StatelessWidget {
-  const HomeAppBar({
-    super.key,
-  });
 
+final double totalPrice;
+  const HomeAppBar({
+    Key? key,
+    required this.totalPrice, 
+  }) : super(key: key);
+ 
   @override
   Widget build(BuildContext context) {
     const mColor = Color(0xff368983);
@@ -33,15 +37,14 @@ class HomeAppBar extends StatelessWidget {
                     Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen(),));
                   },
                   icon: Icon(Icons.settings, size: 30.sp, color: Colors.white)),
-              Consumer<DatabaseProvider>(
-                builder: (context, databaseProvider, child) => Text(
-                  "${databaseProvider.totalPrice} FCFA",
+              Text(
+                  "$totalPrice FCFA",
                   style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 15.sp),
                 ),
-              ),
+            
               Consumer<DatabaseProvider>(
                 builder: (context, databaseProvider, child) => IconButton(
                     onPressed: databaseProvider.openClose,
@@ -59,7 +62,9 @@ class HomeAppBar extends StatelessWidget {
               child: Column(
                 children: [
                   Consumer<DatabaseProvider>(
-                      builder: (context, databaseProvider, child) => SizedBox(
+                      builder: (context, databaseProvider, child) {
+                         databaseProvider.generateControllers(databaseProvider.selectedProducts);
+                      return SizedBox(
                             // height: 60.h,
                             width: 350.w,
                             child: TextField(
@@ -90,17 +95,21 @@ class HomeAppBar extends StatelessWidget {
                                       borderRadius: BorderRadius.circular(20.r),
                                       borderSide: BorderSide.none)),
                             ),
-                          )),
+                          );
+                          
+                      }
+                          ),
+
                   SizedBox(
-                    height: 10.h,
+                    height: 8.h,
                   ),
                   Consumer<DatabaseProvider>(
   builder: (context, databaseProvider, child) => SizedBox(
     height: databaseProvider.filteredProductsDetails.isEmpty
-        ? 100.h
+        ? 80.h
         : databaseProvider.searched
-            ? databaseProvider.filteredProductsDetails.length * 62.h
-            : 2 * 62.h,
+            ? databaseProvider.filteredProductsDetails.length * 52.h
+            : 2 * 52.h,
     child: ListView.builder(
       itemCount: databaseProvider.filteredProductsDetails.length,
       shrinkWrap: true,
@@ -111,7 +120,6 @@ class HomeAppBar extends StatelessWidget {
 
         return InkWell(
           onTap: () {
-            print("Tapped index: $index");
             databaseProvider.onSelect(index);
                
           },
