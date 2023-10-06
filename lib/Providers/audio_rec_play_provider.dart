@@ -71,7 +71,8 @@ class AudioProvider extends ChangeNotifier {
     print("initiazed................========>>>>>>>>>");
   }
 
-  void startOrStopRecording(BuildContext context) async {
+  void startOrStopRecording(BuildContext context) async { 
+    stopPlayer();
     try {
       if (isRecording) {
         recorderController.reset();

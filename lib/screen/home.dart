@@ -291,8 +291,8 @@ double totalPrice = 0.0;
               ///////////////////////////////
                 Consumer<DatabaseProvider>(
                   builder: (context, databaseProvider, child) {
-                   databaseProvider.onProductsSelected(databaseProvider.selectedProducts);
-                      
+                   databaseProvider.generateControllers(databaseProvider.selectedProducts);
+                                  
                    if (databaseProvider.selectedProducts.isEmpty) {
                        totalPrice = 0.0; 
                        }
@@ -427,8 +427,7 @@ double totalPrice = 0.0;
                                   
                                 IconButton(
                                     onPressed: () {
-                                     //update
-                                    },
+                                   },
                                     icon: CircleAvatar(
                                         backgroundColor: mcolor,
                                         radius: 15.r,

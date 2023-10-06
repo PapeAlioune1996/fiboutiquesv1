@@ -100,7 +100,7 @@ class DatabaseProvider extends ChangeNotifier {
   }
   //
  // List<Map<dynamic, dynamic>> userlst = <Map<dynamic, dynamic>>[];
-void setText(int index) {
+/*void setText(int index) {
   if (selectedProducts.isNotEmpty && index >= 0 && index < selectedProducts.length) {
    
     productBuyingPriceController1[index].text =
@@ -130,65 +130,65 @@ void setText(int index) {
     productSellingPriceController1[index].clear();
     productQuantityController[index].clear();
   }
+}*/
+void setText(int index) {
+  if (index >= 0 &&
+      index < productBuyingPriceController1.length &&
+      index < productSellingPriceController1.length &&
+      index < productQuantityController.length) {
+    // Access the elements at the specified index safely
+    String buyingPriceText = productBuyingPriceController1[index].text;
+    String sellingPriceText = productSellingPriceController1[index].text;
+    String quantityText = productQuantityController[index].text;
+
+    if (buyingPriceText.isNotEmpty && sellingPriceText.isNotEmpty && quantityText.isNotEmpty) {
+      double buyingPrice = double.tryParse(buyingPriceText) ?? 0.0;
+      double sellingPrice = double.tryParse(sellingPriceText) ?? 0.0;
+
+      print('Parsed Buying Price: $buyingPrice');
+      print('Parsed Selling Price: $sellingPrice');
+    } else {
+      print("Buying price or selling price is empty!");
+      
+    }
+  } else {
+    // Handle the case where the index is out of bounds for the lists
+    print("Invalid index or empty lists!");
+    // You might want to clear the text fields or handle this case in a way that makes sense for your application
+  }
 }
-
-
-
-
-
-
-
-
-
-
 
 //////////////////
-  generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
-  if (selectedProducts.isEmpty) {
-      print("no selected products");
-    } else {
-      productSellingPriceController1 = List.generate(
-          selectedProducts.length, (index) => TextEditingController());
-          print(productSellingPriceController1);
-      productBuyingPriceController1 = List.generate(
-          selectedProducts.length, (index) => TextEditingController());
-          print(productBuyingPriceController1);
-     if (productQuantityController == null || productQuantityController.isEmpty) {
+void generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
+  productSellingPriceController1.clear();
+  productBuyingPriceController1.clear();
+
+  for (int i = 0; i < selectedProducts.length; i++) {
+    TextEditingController buyingPriceController =
+        TextEditingController(text: selectedProducts[i]["buyingPrice"]);
+    TextEditingController sellingPriceController =
+        TextEditingController(text: selectedProducts[i]["sellingPrice"]);
+
+    productBuyingPriceController1.add(buyingPriceController);
+    productSellingPriceController1.add(sellingPriceController);
+  }
+
+ // if (productQuantityController == null || productQuantityController.isEmpty) {
     productQuantityController = List.generate(
         selectedProducts.length, (index) => TextEditingController(text: "1.0"));
-  }
-  
-    }
-  
-
-  
+ // }
 }
-
 /////////////////
-
-  //selected product in a list
-  onProductsSelected(List<Map<dynamic, dynamic>> products) {
-   
-  if (products.isNotEmpty) {
-     products = selectedProducts;
-      generateControllers(products);
-    
-  }
-}
-
-
   int selectedIndex = -1;
   TextEditingController selectedText = TextEditingController();
   List<Map<dynamic, dynamic>> selectedProducts = <Map<dynamic, dynamic>>[];
 
  onSelect(int index) async {
   if (index >= 0 && index < productsDetails.length) {
-    selectedIndex = index;
-    selectedText.text = await productsDetails[selectedIndex]["name"];
     bool isAlreadySelected = false;
 
     for (var element in selectedProducts) {
-      if (productsDetails[selectedIndex]["name"]
+      if (productsDetails[index]["name"]
           .toString()
           .contains(element["name"])) {
         isAlreadySelected = true;
@@ -199,16 +199,15 @@ void setText(int index) {
     }
 
     if (!isAlreadySelected) {
-      print("${productsDetails[selectedIndex]["name"]} not available");
+      print("${productsDetails[index]["name"]} not available");
       
-      if (productsDetails[selectedIndex]["quantity"] == null) {
-       
-        productsDetails[selectedIndex]["quantity"] = 1.0;
+      if (productsDetails[index]["quantity"] == null) {
+        productsDetails[index]["quantity"] = 1.0;
       }
-      selectedProducts.add(productsDetails[selectedIndex]);
-    
+      selectedProducts.add(productsDetails[index]);
     }
-    searched = false;
+
+   searched = false;
     isOpen = !isOpen;
 
     print("selected products: ${selectedProducts}");
@@ -221,13 +220,14 @@ void setText(int index) {
   }
 }
 
+
 //caliculate 
 double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
   double totalPrice = 0.0;
 
   for (var product in selectedProducts) {
-    double sellingPrice = product["sellingPrice"] ?? 0.0; // Replace "sellingPrice" with the key in your selectedProducts map
-    double quantity = product["quantity"] ?? 0.0; // Replace "quantity" with the key in your selectedProducts map
+    double sellingPrice = product["sellingPrice"] ?? 0.0;
+    double quantity = product["quantity"] ?? 0.0; 
     totalPrice += sellingPrice * quantity;
   }
 
@@ -235,10 +235,6 @@ double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
 }
 
 
-
-
-
-  double totalPrice = 0.0;
 
   saveOrder() async {
     int index = -1;
