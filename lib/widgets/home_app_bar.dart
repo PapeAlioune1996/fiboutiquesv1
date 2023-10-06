@@ -63,7 +63,6 @@ final double totalPrice;
                 children: [
                   Consumer<DatabaseProvider>(
                       builder: (context, databaseProvider, child) {
-                         databaseProvider.generateControllers(databaseProvider.selectedProducts);
                       return SizedBox(
                             // height: 60.h,
                             width: 350.w,

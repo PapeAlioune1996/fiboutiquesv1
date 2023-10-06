@@ -8,23 +8,28 @@ class DatabaseProvider extends ChangeNotifier {
   TextEditingController searchController = TextEditingController();
   TextEditingController productNameController = TextEditingController();
   TextEditingController productSellingPriceController = TextEditingController();
-  late List<TextEditingController> productQuantityController;
+   
 
-  late List<TextEditingController> productSellingPriceController1;
+   
 
   TextEditingController productBuyingPriceController = TextEditingController();
-  late List<TextEditingController> productBuyingPriceController1;
+   List<TextEditingController> productBuyingPriceController1 = [];
+   List<TextEditingController> productSellingPriceController1=[];
+   List<TextEditingController> productQuantityController=[];
 
   List<Map<dynamic, dynamic>> productsDetails = <Map<dynamic, dynamic>>[];
   List<Map<dynamic, dynamic>> ordersDetails = <Map<dynamic, dynamic>>[];
   List<Map<dynamic, dynamic>> filteredProductsDetails =
       <Map<dynamic, dynamic>>[];
-   
-
       late int productCount;
 
   Map<dynamic, dynamic> selectedProductDetails = {};
   bool searched = true;
+
+  //
+  int selectedProductIndex = -1;
+  
+
 
   Future<void> getData() async {
     productsDetails.clear();
@@ -93,30 +98,90 @@ class DatabaseProvider extends ChangeNotifier {
 
     notifyListeners();
   }
-
-  setText(int index) {
+  //
+ // List<Map<dynamic, dynamic>> userlst = <Map<dynamic, dynamic>>[];
+void setText(int index) {
+  if (selectedProducts.isNotEmpty && index >= 0 && index < selectedProducts.length) {
+   
     productBuyingPriceController1[index].text =
         selectedProducts[index]["buyingPrice"];
     productSellingPriceController1[index].text =
         selectedProducts[index]["sellingPrice"];
-    productQuantityController[index].text =  selectedProducts[index]["quantity"].toString();
-  }
+      
+    print('Before update - Buying Price: ${productBuyingPriceController1[index].text}, Selling Price: ${productSellingPriceController1[index].text}, Quantity: ${productQuantityController[index].text}');
 
+    String buyingPriceText = productBuyingPriceController1[index].text;
+    String sellingPriceText = productSellingPriceController1[index].text;
+
+    if (buyingPriceText.isNotEmpty && sellingPriceText.isNotEmpty) {
+      double buyingPrice = double.tryParse(buyingPriceText) ?? 0.0;
+      double sellingPrice = double.tryParse(sellingPriceText) ?? 0.0;
+
+      print('Parsed Buying Price: $buyingPrice');
+      print('Parsed Selling Price: $sellingPrice');
+    } else {
+      print("Buying price or selling price is empty!");
+      // Handle the case where the text fields are empty
+    }
+
+  } else {
+    print("Invalid index or selectedProducts is empty!");
+    productBuyingPriceController1[index].clear();
+    productSellingPriceController1[index].clear();
+    productQuantityController[index].clear();
+  }
+}
+
+
+
+
+
+
+
+
+
+
+
+//////////////////
   generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
-    productSellingPriceController1 = List.generate(
-        selectedProducts.length, (index) => TextEditingController());
-    productBuyingPriceController1 = List.generate(
-        selectedProducts.length, (index) => TextEditingController());
+  if (selectedProducts.isEmpty) {
+      print("no selected products");
+    } else {
+      productSellingPriceController1 = List.generate(
+          selectedProducts.length, (index) => TextEditingController());
+          print(productSellingPriceController1);
+      productBuyingPriceController1 = List.generate(
+          selectedProducts.length, (index) => TextEditingController());
+          print(productBuyingPriceController1);
+     if (productQuantityController == null || productQuantityController.isEmpty) {
     productQuantityController = List.generate(
         selectedProducts.length, (index) => TextEditingController(text: "1.0"));
   }
+  
+    }
+  
+
+  
+}
+
+/////////////////
+
+  //selected product in a list
+  onProductsSelected(List<Map<dynamic, dynamic>> products) {
+   
+  if (products.isNotEmpty) {
+     products = selectedProducts;
+      generateControllers(products);
+    
+  }
+}
+
 
   int selectedIndex = -1;
   TextEditingController selectedText = TextEditingController();
   List<Map<dynamic, dynamic>> selectedProducts = <Map<dynamic, dynamic>>[];
 
  onSelect(int index) async {
-  // Ensure the index is within the bounds of the productsDetails list
   if (index >= 0 && index < productsDetails.length) {
     selectedIndex = index;
     selectedText.text = await productsDetails[selectedIndex]["name"];
@@ -135,14 +200,14 @@ class DatabaseProvider extends ChangeNotifier {
 
     if (!isAlreadySelected) {
       print("${productsDetails[selectedIndex]["name"]} not available");
-      // Check if quantity field is already initialized
+      
       if (productsDetails[selectedIndex]["quantity"] == null) {
-        // Initialize the quantity field with 1.0
+       
         productsDetails[selectedIndex]["quantity"] = 1.0;
       }
       selectedProducts.add(productsDetails[selectedIndex]);
-    }
     
+    }
     searched = false;
     isOpen = !isOpen;
 
@@ -152,7 +217,7 @@ class DatabaseProvider extends ChangeNotifier {
 
     notifyListeners();
   } else {
-    print("Invalid index selected!"); // Debug statement for invalid index
+    print("Invalid index selected!"); 
   }
 }
 

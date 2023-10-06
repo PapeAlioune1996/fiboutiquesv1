@@ -189,22 +189,8 @@ double totalPrice = 0.0;
                                           fontWeight: FontWeight.w400,
                                         ),
                                       ),
-                                SizedBox(width: 10.w),
+                              
                                
-                                IconButton(
-                                    onPressed: () {
-                                     //update
-                                    },
-                                    icon: CircleAvatar(
-                                        backgroundColor: mcolor,
-                                        radius: 15.r,
-                                        child: Icon(
-                                          Icons.update,
-                                          size: 20.sp,
-                                          color: Colors.white,
-                                        ),
-                                        ),
-                                        ),
                                          SizedBox(width: 10.w),
                                 IconButton(
                                     onPressed: () {
@@ -305,14 +291,11 @@ double totalPrice = 0.0;
               ///////////////////////////////
                 Consumer<DatabaseProvider>(
                   builder: (context, databaseProvider, child) {
-                    
-                      databaseProvider.generateControllers(databaseProvider.selectedProducts);
-                    
-                    var product = databaseProvider.selectedProducts.toString();
+                   databaseProvider.onProductsSelected(databaseProvider.selectedProducts);
+                      
                    if (databaseProvider.selectedProducts.isEmpty) {
-                       totalPrice = 0; // Set totalPrice to 0 when selectedProducts list is empty
+                       totalPrice = 0.0; 
                        }
-                   print(product);
                     return Expanded(
                         child: ListView.builder(
                         itemCount:
@@ -331,7 +314,7 @@ double totalPrice = 0.0;
                               height: 35, // Add this line
                               child: TextField(
                                 controller: databaseProvider
-                                    .productSellingPriceController1[index],
+                                    .productSellingPriceController1[index],   
                                 keyboardType: TextInputType.number,
                                   
                                 decoration: InputDecoration(
@@ -349,7 +332,7 @@ double totalPrice = 0.0;
                                   focusedBorder: OutlineInputBorder(
                                     borderRadius: BorderRadius.circular(10),
                                     borderSide: const BorderSide(
-                                        width: 2, color: Color(0xff368983)),
+                                        width: 2, color: Color(0xff368983),),
                                   ),
                                 ),
                               ),
@@ -360,7 +343,6 @@ double totalPrice = 0.0;
                             child: SizedBox(
                               width: 80,
                               height: 35,
-                              // Add this line
                               child: TextField(
                                 controller: databaseProvider
                                     .productBuyingPriceController1[index],
@@ -392,38 +374,32 @@ double totalPrice = 0.0;
                               // Add this line
                               child: TextField(
                                 controller: databaseProvider.productQuantityController[index],
-                                    
                                 keyboardType: TextInputType.number,
+                                autofocus: true,
                                 onChanged: (newQuantity) {
-    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
-    double quantity = double.parse(newQuantity);
+                                double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                               double quantity = double.parse(newQuantity);
 
-    double individualTotalPrice = sellingPrice * quantity;
+                                 double individualTotalPrice = sellingPrice * quantity;
+                                 totalPrice -= individualTotalPrice;
+                                  individualTotalPrice = sellingPrice * quantity;
 
-    // Subtract the old individualTotalPrice from totalPrice
-    totalPrice -= individualTotalPrice;
+                                  totalPrice += individualTotalPrice;
 
-    // Update individualTotalPrice with the new value
-    individualTotalPrice = sellingPrice * quantity;
-
-    // Add the new individualTotalPrice to totalPrice
-    totalPrice += individualTotalPrice;
-
-    // Print the updated total price
-    print('total price so far: $totalPrice');
-  },
+                                  print('total price so far: $totalPrice');
+                                  print('quantity changedd $quantity');
+                                  
+                                 },
                                 onEditingComplete: () {
                            double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                            double quantity = double.parse(databaseProvider.productQuantityController[index].text);
+                          print('quantity change $quantity');
                           double individualTotalPrice = sellingPrice * quantity;
                            print('total price for product $index: $individualTotalPrice');
                            totalPrice += individualTotalPrice; 
-                          
-                           // Add individual product price to total price
                            print('total price so far: $totalPrice');
  
-},
-
+                          },
                                decoration: InputDecoration(
                                   labelText: 'Quantity',
                                   labelStyle: TextStyle(
@@ -448,6 +424,21 @@ double totalPrice = 0.0;
                             children: [
                               Row(
                                 children: [
+                                  
+                                IconButton(
+                                    onPressed: () {
+                                     //update
+                                    },
+                                    icon: CircleAvatar(
+                                        backgroundColor: mcolor,
+                                        radius: 15.r,
+                                        child: Icon(
+                                          Icons.update,
+                                          size: 20.sp,
+                                          color: Colors.white,
+                                        ),
+                                        ),
+                                        ),
                                   IconButton(
                                     onPressed: () {
                                     double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
@@ -476,70 +467,7 @@ double totalPrice = 0.0;
                 ),
               ],
             ),
-            ////////////////////////
-            // Align(
-            //   alignment: Alignment.bottomCenter,
-            //   child: Consumer<AudioProvider>(
-            //     builder: (context, audioProvider, child) => Container(
-            //       width: audioProvider.isRecording ? 320.w : 70.w,
-            //       height: 80.h,
-            //       alignment: Alignment.center,
-            //       padding: EdgeInsets.zero,
-            //       decoration: BoxDecoration(
-            //           borderRadius: BorderRadius.circular(40.r),
-            //           color: Colors.white,
-            //           border: Border.all(color: mcolor),
-            //           boxShadow: [
-            //             BoxShadow(
-            //                 color: Colors.black12, blurRadius: 10.r, spreadRadius: 2.r),
-            //           ]),
-            //       child: Row(mainAxisAlignment: MainAxisAlignment.center, children: [
-            //         IconButton(
-            //           onPressed: () {
-            //             audioProvider.startOrStopRecording(context);
-            //           },
-            //           icon: Icon(audioProvider.isRecording ? Icons.stop : Icons.mic),
-            //           color: mcolor,
-            //           iconSize: 35.sp,
-            //         ),
-            //         Visibility(
-            //             visible: audioProvider.isRecording,
-            //             child: AudioWaveforms(
-            //               size: Size(250.w, 50.h),
-            //               recorderController: audioProvider.recorderController,
-            //               waveStyle: WaveStyle(
-            //                 waveColor: mcolor,
-            //                 extendWaveform: true,
-            //                 showMiddleLine: false,
-            //               ),
-            //             ))
-            //         // AnimatedSwitcher(
-            //         //   duration: const Duration(milliseconds: 1000),
-            //         //   switchInCurve: Curves.bounceOut,
-            //         //   layoutBuilder: (currentChild, previousChildren) =>
-            //         //       audioProvider.isRecording
-            //         //           ? AudioWaveforms(
-            //         //               size: Size(250.w, 50.h),
-            //         //               recorderController: audioProvider.recorderController,
-            //         //               waveStyle: WaveStyle(
-            //         //                 waveColor: Colors.green.shade600,
-            //         //                 extendWaveform: true,
-            //         //                 showMiddleLine: false,
-            //         //               ),
-            //         //             )
-            //         //           : Text(
-            //         //               "Please try again",
-            //         //               style: TextStyle(
-            //         //                 color: Colors.green.shade600,
-            //         //                 fontSize: 20.sp,
-            //         //                 fontWeight: FontWeight.w400,
-            //         //               ),
-            //         //             ),
-            //         // ),
-            //       ]),
-            //     ),
-            //   ),
-            // )
+           
           ],
         ),
       ),
