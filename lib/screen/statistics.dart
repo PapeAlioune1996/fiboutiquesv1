@@ -34,7 +34,8 @@ class _StatisticsState extends State<Statistics> {
             style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
         centerTitle: true,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
+          child:  Padding(
         padding: EdgeInsets.all(8.sp),
         child: Column(
           children: [
@@ -62,26 +63,93 @@ class _StatisticsState extends State<Statistics> {
           ),
       ),
         ),
-            Row(
-              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-              children: [
-                Text(
-                  'Sales',
-                  style: TextStyle(
-                      color: Colors.black,
-                      fontSize: 16.sp,
-                      fontWeight: FontWeight.bold),
+        Center(
+        child:  Text(
+      'Sales',
+      style: TextStyle(
+        color: Colors.black,
+        fontSize: 16.sp,
+        fontWeight: FontWeight.bold,
+      ),
+    ),
+        ),
+        
+    
+    Row(
+      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      children: [
+        ElevatedButton(
+          onPressed: () {
+            // Add functionality for the first button here
+          },
+          child: Text('Day'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // Add functionality for the second button here
+          },
+          child: Text('Week'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // Add functionality for the third button here
+          },
+          child: Text('Month'),
+        ),
+        ElevatedButton(
+          onPressed: () {
+            // Add functionality for the fourth button here
+          },
+          child: Text('Year'),
+        ),
+      ],
+    ),
+
+     // Add the DataTable widget with three columns: Total Price, Quantity, and Profit
+            DataTable(
+              columns: const <DataColumn>[
+                DataColumn(
+                  label: Text(
+                    'Total Price',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
-              
-                Icon(
-                  Icons.swap_vert,
-                  size: 25.sp,
-                  color: Colors.grey,
+                DataColumn(
+                  label: Text(
+                    'Quantity',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                ),
+                DataColumn(
+                  label: Text(
+                    'Profit',
+                    style: TextStyle(
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
                 ),
               ],
+              rows: <DataRow>[
+                DataRow(
+                  cells: <DataCell>[
+                    DataCell(Text('100')), // Replace with actual data
+                    DataCell(Text('10')), // Replace with actual data
+                    DataCell(Text('50')), // Replace with actual data
+                  ],
+                ),
+                // Add more DataRow widgets for additional data rows
+              ],
             ),
-          ],
-        ),
+    
+  ],
+),
+
+          
+      ),
       ),
     );
   }

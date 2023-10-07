@@ -154,37 +154,33 @@ void setText(int index) {
 
  // }
 }*/
-void generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
-  productSellingPriceController1.clear();
-  productBuyingPriceController1.clear();
-  productQuantityController.clear();
+//////////////////
+void generateControllers(Map<dynamic, dynamic> selectedProducts) {
 
-  for (int i = 0; i < selectedProducts.length; i++) {
-    Map<dynamic, dynamic> productDetails = selectedProducts[i];
-    
-    // Cast the dynamic map to a map with specific types
-    Map<String, dynamic> typedProductDetails = Map<String, dynamic>.from(productDetails);
+  //if(productQuantityController.isEmpty) {
+  //   productSellingPriceController1.clear();
+  //   productBuyingPriceController1.clear();
 
-    String productName = typedProductDetails["name"];
-    String buyingPrice = typedProductDetails["buyingPrice"];
-    String sellingPrice = typedProductDetails["sellingPrice"];
 
-    TextEditingController buyingPriceController =
-        TextEditingController(text: buyingPrice);
-       
-    TextEditingController sellingPriceController =
-        TextEditingController(text: sellingPrice);
 
-    TextEditingController quantityController =
-        TextEditingController(text: "1.0");
 
-    // Add the controllers to the respective lists
-    productBuyingPriceController1.add(buyingPriceController);
-    productSellingPriceController1.add(sellingPriceController);
-    productQuantityController.add(quantityController);
-  }
+      TextEditingController buyingPriceController =
+      TextEditingController(text: selectedProducts["buyingPrice"]);
+      TextEditingController sellingPriceController =
+      TextEditingController(text: selectedProducts["sellingPrice"]);
+
+      productBuyingPriceController1.add(buyingPriceController);
+      productSellingPriceController1.add(sellingPriceController);
+
+
+
+
+    print('${productBuyingPriceController1.length}');
+    // if (productQuantityController == null || productQuantityController.isEmpty) {
+    productQuantityController.add(TextEditingController(text: "1.0") );
+ // }
+ // }
 }
-
 
 /////////////////
   int selectedIndex = -1;
@@ -193,7 +189,10 @@ void generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
 void onSelect(String productName) async {
   // Find the product by name in productsDetails list
   var productIndex = productsDetails.indexWhere((product) => product["name"] == productName);
-
+if (selectedProducts.isEmpty) {
+    // Initialize the list if it's empty
+    selectedProducts = <Map<dynamic, dynamic>>[];
+  }
   if (productIndex != -1) {
     bool isAlreadySelected = false;
 
@@ -211,6 +210,7 @@ void onSelect(String productName) async {
       }
       selectedProducts.add(productsDetails[productIndex]);
     }
+    generateControllers(productsDetails[productIndex]);
 
     searched = false;
     isOpen = !isOpen;

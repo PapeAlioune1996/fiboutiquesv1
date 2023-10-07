@@ -291,7 +291,7 @@ double totalPrice = 0.0;
               ///////////////////////////////
                 Consumer<DatabaseProvider>(
                   builder: (context, databaseProvider, child) {
-                   databaseProvider.generateControllers(databaseProvider.selectedProducts);
+                  // databaseProvider.generateControllers();
                                   
                    if (databaseProvider.selectedProducts.isEmpty) {
                        totalPrice = 0.0; 
