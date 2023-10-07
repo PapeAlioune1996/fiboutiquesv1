@@ -97,7 +97,7 @@ double totalPrice = 0.0;
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                 HomeAppBar(totalPrice: totalPrice),
+                 HomeAppBar(),
 
                 const SizedBox(
                   height: 10,
@@ -302,6 +302,7 @@ double totalPrice = 0.0;
                      databaseProvider.selectedProducts.length,
                     itemBuilder: (context, index) {
                           databaseProvider.setText(index);
+                          var product = databaseProvider.selectedProducts[index];
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
@@ -376,7 +377,7 @@ double totalPrice = 0.0;
                                 controller: databaseProvider.productQuantityController[index],
                                 keyboardType: TextInputType.number,
                                 autofocus: true,
-                                onChanged: (newQuantity) {
+                               /* onChanged: (newQuantity) {
                                 double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                                double quantity = double.parse(newQuantity);
 
@@ -389,7 +390,7 @@ double totalPrice = 0.0;
                                   print('total price so far: $totalPrice');
                                   print('quantity changedd $quantity');
                                   
-                                 },
+                                 },*/
                                 onEditingComplete: () {
                            double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                            double quantity = double.parse(databaseProvider.productQuantityController[index].text);
@@ -445,7 +446,7 @@ double totalPrice = 0.0;
                                     double individualTotalPrice = sellingPrice * quantity;
                                     totalPrice -= individualTotalPrice;
     
-                                    databaseProvider.removeSelectedProduct(index);
+                                    databaseProvider.removeSelectedProduct(product["name"]);
                                     print('total price after deletion: $totalPrice');
                                        },
                                     icon: const Icon(

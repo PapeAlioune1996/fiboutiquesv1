@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
+import 'package:fiboutiquesv1/screen/home.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -10,10 +11,10 @@ import '../screen/settings.dart';
 
 class HomeAppBar extends StatelessWidget {
 
-final double totalPrice;
+//final double totalPrice;
   const HomeAppBar({
     Key? key,
-    required this.totalPrice, 
+   // required this.totalPrice, 
   }) : super(key: key);
  
   @override
@@ -37,13 +38,17 @@ final double totalPrice;
                     Navigator.push(context, MaterialPageRoute(builder: (context) => SettingScreen(),));
                   },
                   icon: Icon(Icons.settings, size: 30.sp, color: Colors.white)),
-              Text(
-                  "$totalPrice FCFA",
+             
+             Consumer<DatabaseProvider>(
+                builder: (context, databaseProvider, child) => Text(
+                  "${databaseProvider.totalPrice} FCFA",
                   style: TextStyle(
                       color: Colors.white,
                       fontWeight: FontWeight.bold,
                       fontSize: 15.sp),
                 ),
+              ),
+              
             
               Consumer<DatabaseProvider>(
                 builder: (context, databaseProvider, child) => IconButton(
@@ -105,21 +110,24 @@ final double totalPrice;
                   Consumer<DatabaseProvider>(
   builder: (context, databaseProvider, child) => SizedBox(
     height: databaseProvider.filteredProductsDetails.isEmpty
-        ? 80.h
+        ? 5.h
         : databaseProvider.searched
             ? databaseProvider.filteredProductsDetails.length * 52.h
             : 2 * 52.h,
+            
     child: ListView.builder(
       itemCount: databaseProvider.filteredProductsDetails.length,
       shrinkWrap: true,
       itemBuilder: (context, index) {
         var product = databaseProvider.filteredProductsDetails[index];
-        print("Filtered Products Length: ${databaseProvider.filteredProductsDetails.length}"); // Print filtered products length for debugging
-     
+       // print("Filtered Products Length: ${databaseProvider.filteredProductsDetails.length}"); // Print filtered products length for debugging
+        print("Filtered Products ======: ${databaseProvider.filteredProductsDetails}");
+
 
         return InkWell(
           onTap: () {
-            databaseProvider.onSelect(index);
+            print("Tapped index: ${product["name"]}");
+             databaseProvider.onSelect(product["name"]);
                
           },
           child: Container(
