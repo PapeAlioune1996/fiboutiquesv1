@@ -1,6 +1,7 @@
 import 'dart:async';
 
 import 'package:audio_waveforms/audio_waveforms.dart';
+import 'package:fiboutiquesv1/Providers/totalprice.dart';
 import 'package:fiboutiquesv1/widgets/home_app_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -19,13 +20,16 @@ class MyHomeScree extends StatefulWidget {
 }
 
 class _MyHomeScreeState extends State<MyHomeScree> {
+ late AudioProvider audioProvider;
  
-double totalPrice = 0.0;
+   
   
   @override
   void initState() {
+    audioProvider = Provider.of<AudioProvider>(context, listen: false);
+
     Timer(const Duration(milliseconds: 1), () {
-      Provider.of<AudioProvider>(context, listen: false)
+      audioProvider
           .initialiseControllers();
       Provider.of<AudioProvider>(context, listen: false).getDir();
       Provider.of<DatabaseProvider>(context, listen: false).getData();
@@ -40,15 +44,15 @@ double totalPrice = 0.0;
 
   @override
   void dispose() {
-    Provider.of<AudioProvider>(context, listen: false)
-        .recorderController
-        .dispose();
+    audioProvider.recorderController.dispose();
     super.dispose();
   }
 
   @override
   Widget build(BuildContext context) {
-    
+    double totalPrice = Provider.of<TotalPriceProvider>(context).totalPrice;
+     var totalPriceProvider = Provider.of<TotalPriceProvider>(context, listen: false);
+   
     return Scaffold(
       floatingActionButton: Consumer<AudioProvider>(
         builder: (context, audioProvider, child) => Container(
@@ -97,7 +101,7 @@ double totalPrice = 0.0;
             Column(
               crossAxisAlignment: CrossAxisAlignment.center,
               children: [
-                 HomeAppBar(),
+                 HomeAppBar(totalPrice: totalPrice),
 
                 const SizedBox(
                   height: 10,
@@ -230,8 +234,8 @@ double totalPrice = 0.0;
       : Stack(
       children: [
         IconButton(
-          onPressed: () {
-            databaseProvider.saveOrder();
+          onPressed: () async {
+            await databaseProvider.saveOrder();
           },
           icon: Icon(
             Icons.shopping_cart,
@@ -292,10 +296,12 @@ double totalPrice = 0.0;
                 Consumer<DatabaseProvider>(
                   builder: (context, databaseProvider, child) {
                   // databaseProvider.generateControllers();
-                                  
-                   if (databaseProvider.selectedProducts.isEmpty) {
-                       totalPrice = 0.0; 
-                       }
+                  WidgetsBinding.instance.addPostFrameCallback((_)
+                 { if (databaseProvider.selectedProducts.isEmpty) {
+                       totalPriceProvider.updateTotalPrice(0.0);
+
+                       }} ) ;          
+                   
                     return Expanded(
                         child: ListView.builder(
                         itemCount:
@@ -391,7 +397,7 @@ double totalPrice = 0.0;
                                   print('quantity changedd $quantity');
                                   
                                  },*/
-                                onEditingComplete: () {
+                               /* onEditingComplete: () {
                            double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                            double quantity = double.parse(databaseProvider.productQuantityController[index].text);
                           print('quantity change $quantity');
@@ -400,7 +406,22 @@ double totalPrice = 0.0;
                            totalPrice += individualTotalPrice; 
                            print('total price so far: $totalPrice');
  
-                          },
+                          },*/
+                          onEditingComplete: () {
+                    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                   double quantity = double.parse(databaseProvider.productQuantityController[index].text);
+                   double individualTotalPrice = sellingPrice * quantity;
+                      totalPrice += individualTotalPrice; 
+                    // Update totalPrice using TotalPriceProvider
+                    //totalPriceProvider.updateTotalPrice(totalPrice);
+                    WidgetsBinding.instance.addPostFrameCallback((_) {
+                  totalPriceProvider.updateTotalPrice(totalPrice);
+                  });
+
+                    print('quantity change $quantity');
+                     print('total price for product $index: $individualTotalPrice');
+},
+
                                decoration: InputDecoration(
                                   labelText: 'Quantity',
                                   labelStyle: TextStyle(
@@ -444,8 +465,10 @@ double totalPrice = 0.0;
                                     double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                                     double quantity = double.parse(databaseProvider.productQuantityController[index].text);
                                     double individualTotalPrice = sellingPrice * quantity;
+                                    //String productname = databaseProvider.P
                                     totalPrice -= individualTotalPrice;
-    
+                                    totalPriceProvider.updateTotalPrice(totalPrice);
+
                                     databaseProvider.removeSelectedProduct(product["name"]);
                                     print('total price after deletion: $totalPrice');
                                        },

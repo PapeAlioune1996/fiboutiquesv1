@@ -1,6 +1,7 @@
 import 'package:fiboutiquesv1/Database/order_details.dart';
 import 'package:fiboutiquesv1/Database/product.dart';
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
+import 'package:fiboutiquesv1/Providers/totalprice.dart';
 import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -17,7 +18,12 @@ void main() async {
   Hive.registerAdapter(OrderDetailsAdapter());
   products = await Hive.openBox<Product>("products");
   orders = await Hive.openBox<Product>("orders");
-  runApp(const MyApp());
+  runApp(
+      ChangeNotifierProvider(
+        create: (context) => TotalPriceProvider(),
+        child: MyApp(),
+      ),
+    );
 }
 
 class MyApp extends StatelessWidget {

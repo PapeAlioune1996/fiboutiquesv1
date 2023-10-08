@@ -3,6 +3,7 @@ import 'package:fiboutiquesv1/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:intl/intl.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   TextEditingController searchController = TextEditingController();
@@ -267,22 +268,45 @@ if (selectedProducts.isEmpty) {
 } */
 
 
-//caliculate 
-double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
-  double totalPrice = 0.0;
 
-  for (var product in selectedProducts) {
-    double sellingPrice = product["sellingPrice"] ?? 0.0;
-    double quantity = product["quantity"] ?? 0.0; 
-    totalPrice += sellingPrice * quantity;
+
+
+// 
+Future<void> saveOrder() async {
+  DateTime dateTime = DateTime.now();
+  for (var element in selectedProducts) {
+    String name = element["name"];
+    String sellingPrice = productSellingPriceController1[selectedProducts.indexOf(element)].text;
+    String buyingPrice = productBuyingPriceController1[selectedProducts.indexOf(element)].text;
+    String quantity = productQuantityController[selectedProducts.indexOf(element)].text;
+    double totalPrice = double.parse(sellingPrice) * double.parse(quantity);
+    double profit = double.parse(sellingPrice) - double.parse(buyingPrice);
+
+    await orders.put(
+      "order${orders.length}",
+      Product(
+        details: {
+          "productName": name,
+          "orderNo": "${orders.length}",
+          "date": "Time: ${dateTime.minute} : ${dateTime.hour}  Date: ${dateTime.day}/${dateTime.month}/${dateTime.year}",
+          "sellingPrice": sellingPrice,
+          "buyingPrice": buyingPrice,
+          "quantity": quantity,
+          "totalPrice": "$totalPrice",
+          "profit":"$profit"
+        },
+      ),
+    );
   }
 
-  return totalPrice;
+  Fluttertoast.showToast(msg: "Orders Saved");
+  selectedProducts.clear();
+  getOrders();
+  notifyListeners();
 }
 
-
- double totalPrice = 0.0;
-  saveOrder() async {
+  /*saveOrder() async {
+    //double totalPrice = 0.0;
     int index = -1;
     for (var element in selectedProducts) {
       index++;
@@ -295,7 +319,7 @@ double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
       String buyingPrice = productBuyingPriceController1[index].text;
       String quantity = productQuantityController[index].text;
       //increment total price
-       totalPrice = ( double.parse(element["sellingPrice"])* double.parse(quantity));
+      double totalPrice = ( double.parse(element["sellingPrice"])* double.parse(quantity));
        print("orders :${orders.length}");
       orders
           .put(
@@ -317,7 +341,7 @@ double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
       notifyListeners();
       break;
     }
-  }
+  }*/
   //
   // Method to remove a selected product based on its index
  /* void removeSelectedProduct(int index) {
@@ -339,6 +363,7 @@ double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
     selectedProducts.removeAt(productIndex);
     print(productIndex);
     productCount = selectedProducts.length;
+    generateControllers(productsDetails[productIndex]);
     notifyListeners();
   } else {
     print("Product not found in selected products!"); 
@@ -496,7 +521,110 @@ double calculateTotalPrice(List<Map<String, dynamic>> selectedProducts) {
       ),
     );
   }
+    
+
+void getOrdersForCurrentDay() {
+  ordersDetails.clear();
+  double totalSales = 0;
+  double totalQuantity = 0;
+  double totalProfit = 0;
+
+  // Get the current date in the format dd/MM/yyyy
+  String currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+
+  for (int a = 0; a < orders.length; a++) {
+    var val = orders.getAt(a).details;
+    String date = val["date"];
+    
+    // Extract date and time parts using regex pattern
+    RegExp regExp = RegExp(r"Time: (\d+:\d+)  Date: (\d+/\d+/\d+)");
+    Match? match = regExp.firstMatch(date);
+    if (match != null && match.groupCount == 2) {
+      String time = match.group(1)!;
+      String formattedOrderDate = match.group(2)!; // Extract the date part (e.g., 8/10/2023)
+
+      // Compare the order date with the current date
+      if (formattedOrderDate == currentDate) {
+        ordersDetails.add(val);
+        // Calculate total sales, total quantity, and total profit for the current day
+        totalSales += double.parse(val["totalPrice"]);
+        totalQuantity += double.parse(val["quantity"]);
+        totalProfit += double.parse(val["profit"]);
+      }
+    }
+  }
+
+  print('Total Sales for Today: \$${totalSales.toStringAsFixed(2)}');
+  print('Total Quantity Sold Today: ${totalQuantity.toStringAsFixed(2)}');
+  print('Total Profit for Today: \$${totalProfit.toStringAsFixed(2)}');
+ 
+  
 }
+
+
+
+
+  
+/*void getOrdersForCurrentDay() {
+  String currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
+  print('Current Date: $currentDate'); // Debug statement
+
+  double totalSales = 0;
+  double totalQuantity = 0;
+  double totalProfit = 0;
+
+  for (var order in ordersDetails) {
+    String orderDate = order["date"].toString();
+    print('Order Date: $orderDate'); // Debug statement
+
+    // Extract date and time parts from the orderDate string
+    List<String> dateAndTimeParts = orderDate.split(' ');
+
+    // Extract time parts and date parts
+    List<String> timeParts = dateAndTimeParts[3].split(':');
+    List<String> dateParts = dateAndTimeParts[3].split('/');
+
+    
+    String hour = timeParts[1];
+    String minute = timeParts[2];
+
+    String day = dateParts[0];
+    String month = dateParts[1];
+    String year = dateParts[2];
+
+    // Format the extracted date components into the expected format
+    String formattedOrderDate = '$day/$month/$year';
+    print('Formatted Order Date: $formattedOrderDate'); // Debug statement
+
+    if (formattedOrderDate == currentDate) {
+      // Extract other order details and perform calculations
+      String sellingPrice = order["sellingPrice"];
+      String quantity = order["quantity"];
+      String profit = order["profit"];
+
+      double totalPrice = double.parse(sellingPrice) * double.parse(quantity);
+      double profitValue = double.parse(profit);
+
+      totalSales += totalPrice;
+      totalQuantity += double.parse(quantity);
+      totalProfit += profitValue;
+    }
+  }
+
+  print('Total Sales for Today: \$${totalSales.toStringAsFixed(2)}');
+  print('Total Quantity Sold Today: ${totalQuantity.toStringAsFixed(2)}');
+  print('Total Profit for Today: \$${totalProfit.toStringAsFixed(2)}');
+}*/
+
+
+
+
+
+   
+}
+
+//sales 
+
 //analitycs
 class ChartData {
   ChartData(this.x, this.y);

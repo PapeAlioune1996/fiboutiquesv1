@@ -1,6 +1,7 @@
 // ignore_for_file: avoid_print
 
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
+import 'package:fiboutiquesv1/Providers/totalprice.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -9,14 +10,17 @@ import 'package:provider/provider.dart';
 import '../screen/settings.dart';
 
 class HomeAppBar extends StatelessWidget {
-  
+  final double totalPrice;
 
   const HomeAppBar({
-    Key? key
+    Key? key, required this.totalPrice
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
+    // Access TotalPriceProvider to update totalPrice
+    TotalPriceProvider totalPriceProvider =
+        Provider.of<TotalPriceProvider>(context);
     const mColor = Color(0xff368983);
     return AnimatedContainer(
       padding: EdgeInsets.all(15.sp),
@@ -41,11 +45,12 @@ class HomeAppBar extends StatelessWidget {
                   },
                   icon: Icon(Icons.settings, size: 30.sp, color: Colors.white)),
               Text(
-                "0.0 FCFA",
+                "${totalPriceProvider.totalPrice} FCFA", // Updated to use provider's total price
                 style: TextStyle(
-                    color: Colors.white,
-                    fontWeight: FontWeight.bold,
-                    fontSize: 15.sp),
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 15.sp,
+                ),
               ),
               Consumer<DatabaseProvider>(
                 builder: (context, databaseProvider, child) => IconButton(

@@ -78,11 +78,14 @@ class _StatisticsState extends State<Statistics> {
     Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
+         Consumer<DatabaseProvider>(
+  builder: (context, databaseProvider, child) =>
         ElevatedButton(
           onPressed: () {
-            // Add functionality for the first button here
+            //databaseProvider.getOrdersForCurrentDay();
           },
           child: Text('Day'),
+        ),
         ),
         ElevatedButton(
           onPressed: () {
