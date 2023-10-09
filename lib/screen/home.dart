@@ -108,7 +108,6 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                 ),
 
                 ///listviw audio
-
                 Consumer<AudioProvider>(
                   builder: (context, audioProvider, child) => Visibility(
                     visible: audioProvider.fileList.isNotEmpty,
@@ -449,6 +448,11 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                                   
                                 IconButton(
                                     onPressed: () {
+                                      double newSellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                                      double newBuyingPrice = double.parse(databaseProvider.productBuyingPriceController1[index].text);
+                                      String productName = databaseProvider.selectedProducts[index]["name"];
+                                      databaseProvider.updateProductPrices(productName, newSellingPrice, newBuyingPrice);
+   
                                    },
                                     icon: CircleAvatar(
                                         backgroundColor: mcolor,
@@ -497,50 +501,8 @@ class _MyHomeScreeState extends State<MyHomeScree> {
     );
   }
 
-//
-// Widget buildProduct(BuildContext context) => ;
 
-//
 
-// Widget getList(String history, int index) {
-//   return Dismissible(
-//       key: UniqueKey(),
-//       onDismissed: (direction) {
-//         //  history.delete();
-//       },
-//       child: get(index, history));
-// }
-//
-// ListTile get(int index, String history) {
-//   return ListTile(
-//     leading: ClipRRect(
-//       borderRadius: BorderRadius.circular(5),
-//       //child: Image.asset('images/${history.name}.png', height: 40),
-//     ),
-//     title: const Text(
-//       // history.name,
-//       'historyname',
-//       style: TextStyle(
-//         fontSize: 17,
-//         fontWeight: FontWeight.w600,
-//       ),
-//     ),
-//     subtitle: const Text(
-//       'historydate',
-//       style: TextStyle(
-//         fontWeight: FontWeight.w600,
-//       ),
-//     ),
-//     trailing: const Text(
-//       // history.amount,
-//       'Total price',
-//       style: TextStyle(
-//         fontWeight: FontWeight.w600,
-//         fontSize: 19,
-//       ),
-//     ),
-//   );
-// }
 }
 
 

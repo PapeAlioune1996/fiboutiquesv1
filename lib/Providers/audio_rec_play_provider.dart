@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'dart:io';
 
+import 'package:audio_service/audio_service.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -71,11 +72,20 @@ class AudioProvider extends ChangeNotifier {
     print("initiazed................========>>>>>>>>>");
   }
 
+  void stopAllAudioPlayback() {
+    AudioService.stop();
+    stopPlayer(); // You can call your existing stopPlayer method here as well
+  }
+
   void startOrStopRecording(BuildContext context) async { 
-    stopPlayer();
+    
+    if (isPlaying) {
+    stopPlayer(); // Stop the player if it's currently playing
+  }
     try {
       if (isRecording) {
         recorderController.reset();
+        
         final path = await recorderController.stop(false);
         getDir();
         if (path != null) {

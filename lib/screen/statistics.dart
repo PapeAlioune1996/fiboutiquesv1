@@ -78,24 +78,25 @@ class _StatisticsState extends State<Statistics> {
     Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
       children: [
-         Consumer<DatabaseProvider>(
-  builder: (context, databaseProvider, child) =>
+      
         ElevatedButton(
-          onPressed: () {
-            //databaseProvider.getOrdersForCurrentDay();
+          onPressed: ()  {
+            Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentDay();
           },
           child: Text('Day'),
         ),
-        ),
+        
         ElevatedButton(
-          onPressed: () {
-            // Add functionality for the second button here
+          onPressed: ()  {
+         
+             Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentWeek();
           },
           child: Text('Week'),
         ),
         ElevatedButton(
           onPressed: () {
-            // Add functionality for the third button here
+          
+            //Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentMonth();
           },
           child: Text('Month'),
         ),
@@ -109,43 +110,55 @@ class _StatisticsState extends State<Statistics> {
     ),
 
      // Add the DataTable widget with three columns: Total Price, Quantity, and Profit
-            DataTable(
-              columns: const <DataColumn>[
-                DataColumn(
-                  label: Text(
-                    'Total Price',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Quantity',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-                DataColumn(
-                  label: Text(
-                    'Profit',
-                    style: TextStyle(
-                      fontWeight: FontWeight.bold,
-                    ),
-                  ),
-                ),
-              ],
-              rows: <DataRow>[
-                DataRow(
-                  cells: <DataCell>[
-                    DataCell(Text('100')), // Replace with actual data
-                    DataCell(Text('10')), // Replace with actual data
-                    DataCell(Text('50')), // Replace with actual data
-                  ],
-                ),
-                // Add more DataRow widgets for additional data rows
-              ],
+    Consumer<DatabaseProvider>(
+              builder: (context, databaseProvider, child) {
+                 String totalSalesText = databaseProvider.totalSales.toStringAsFixed(2);
+                 String totalQuantityText = databaseProvider.totalQuantity.toStringAsFixed(2);
+                 String totalProfitText = databaseProvider.totalProfit.toStringAsFixed(2);
+
+
+                List<DataRow> rows = []; // Initialize with actual data
+
+                return DataTable(
+  columns: const <DataColumn>[
+    DataColumn(
+      label: Text(
+        'Total Price',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    DataColumn(
+      label: Text(
+        'Quantité',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+    DataColumn(
+      label: Text(
+        'Bénéfice',
+        style: TextStyle(
+          fontWeight: FontWeight.bold,
+        ),
+      ),
+    ),
+  ],
+  rows: <DataRow>[
+    DataRow(
+      cells: <DataCell>[
+        DataCell(Text(totalSalesText)),
+        DataCell(Text(totalQuantityText)),
+        DataCell(Text(totalProfitText)),
+      ],
+    ),
+  ],
+);
+
+                  
+              },
             ),
     
   ],

@@ -18,6 +18,9 @@ void main() async {
   Hive.registerAdapter(OrderDetailsAdapter());
   products = await Hive.openBox<Product>("products");
   orders = await Hive.openBox<Product>("orders");
+
+  //print('Path to products database: ${products.path}');
+ // print('Path to orders database: ${orders.path}');
   runApp(
       ChangeNotifierProvider(
         create: (context) => TotalPriceProvider(),

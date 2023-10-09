@@ -51,6 +51,7 @@ dependencies:
   permission_handler: ^11.0.0
   percent_indicator: ^4.2.2
   shared_preferences: ^2.2.1
+  audio_service: ^0.18.12
   #shared_storage: ^0.8.0
 
  
