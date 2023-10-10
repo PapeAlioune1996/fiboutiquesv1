@@ -1,10 +1,12 @@
 import 'dart:async';
 
+import 'package:fiboutiquesv1/Database/order_details.dart';
 import 'package:fiboutiquesv1/Database/product.dart';
 import 'package:fiboutiquesv1/main.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
+import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
 
@@ -20,6 +22,7 @@ class DatabaseProvider extends ChangeNotifier {
 
   List<Map<dynamic, dynamic>> productsDetails = <Map<dynamic, dynamic>>[];
   List<Map<dynamic, dynamic>> ordersDetails = <Map<dynamic, dynamic>>[];
+   List<Map<dynamic, dynamic>> myOrders = <Map<dynamic, dynamic>>[];
   List<Map<dynamic, dynamic>> filteredProductsDetails = <Map<dynamic, dynamic>>[];
       late int productCount;
 
@@ -31,6 +34,7 @@ class DatabaseProvider extends ChangeNotifier {
 
   //
   int selectedProductIndex = -1;
+  
   
   //initialise 
   
@@ -80,16 +84,6 @@ void dispose() {
   super.dispose();
 }
 
-
-
-void _handleSubmitted(String productName) {
-  
-  productName = productNameController.text;
-                  print("$productName e°°°°°°FF!");
-                 
-  
-    
-  }
    
 
 
@@ -395,7 +389,8 @@ Future<void> saveOrder() async {
         },
       ),
     );
-    
+    //myOrders.add(value);
+    notifyListeners();
     
   }
 
@@ -405,9 +400,9 @@ Future<void> saveOrder() async {
   productSellingPriceController1.clear();
   productQuantityController.clear();
    getOrders();
-  await getOrdersForCurrentDay();
-  await getOrdersForCurrentWeek();
-  notifyListeners();
+  //await getOrdersForCurrentDay();
+ // await getOrdersForCurrentWeek();
+  
 }
 
   /*saveOrder() async {
@@ -483,67 +478,56 @@ Future<void> saveOrder() async {
   }
 }
 
-  /*void removeSelectedProduct(String productName) async {
-  var productIndex = await selectedProducts.indexWhere((product) => product["name"] == productName);
-
-  if (productIndex != -1) {
-    // Clear the corresponding text controllers
-    productBuyingPriceController1.removeAt(productIndex);
-    productSellingPriceController1.removeAt(productIndex);
-    productQuantityController.removeAt(productIndex);
-
-    selectedProducts.removeAt(productIndex);
-    
-    productBuyingPriceController1.removeAt(productIndex);
-    productSellingPriceController1.removeAt(productIndex);
-    productQuantityController.removeAt(productIndex);
-    productCount = selectedProducts.length;
-    print(productCount);
-    notifyListeners();
-  } else {
-    print("Product not found in selected products!");
-  }
-} */
-
-  /*void removeSelectedProduct(String productName) async {
-  var productIndex = await selectedProducts.indexWhere((product) => product["name"] == productName);
-
-  if (productIndex != -1) {
-    selectedProducts.removeAt(productIndex);
-    print(productIndex);
-    productCount = selectedProducts.length;
-    generateControllers(productsDetails[productIndex]);
-    //productsDetails.clear();
-    notifyListeners();
-  } else {
-    print("Product not found in selected products!"); 
-  }
-}*/
-
-
   //
   late List<int> hours ;
   late Map<int, int> orderCountPerHour ;
    List<ChartData> chartData = []; // Initialize chartData as an empty list
+// fonction qui retour la liste des ventes
+// I get all Orders
+  List<OrderDetails> a = [];
+Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
+    List<Map<dynamic, dynamic>> allOrders = <Map<dynamic, dynamic>>[];
+   
+  
+  //getOrders();
+  allOrders.clear();
+  notifyListeners();
+    for (int a = 0; a < orders.length; a++){
+      var val = await orders.getAt(a);
+      allOrders.add(val.details);
+    }
+    return allOrders;
+  }
+
 
   Future<void> getOrders() async {
+   
     ordersDetails.clear();
+    ///myOrders.clear();
+   List<Map<dynamic, dynamic>> dailyList = [];
     notifyListeners();
     for (int a = 0; a < orders.length; a++) {
       var val = await orders.getAt(a);
       ordersDetails.add(val.details);
-      print('list : $ordersDetails');
+      dailyList.add(val.details);
+      
+     
     }
+    myOrders = dailyList;
+     print('list : $myOrders');
+     for(var e in myOrders){
+        print('list elements : $e');
+     }
     hours = ordersDetails.map((order) {
-      print(order);
+     // print(order);
       final String date = order["date"];
-      print(date);
+     // print(date);
       final List<String> parts = date.split(' ');
-      print(parts);
+     // print(parts);
       final String timePart = parts[3]; // Extract the time part
-      print(timePart);
+      //print(timePart);
       final List<String> timeParts = timePart.split(':');
-      print(timeParts);
+      //print(timeParts);
       return int.tryParse(timeParts[0]) ?? 0; // Extract the hour
     }).toList();
 
@@ -705,17 +689,19 @@ Future<void> saveOrder() async {
     );
   }
     
-Future<void> getOrdersForCurrentDay() {
- 
+Future<void> getOrdersForCurrentDay() async{
     Completer<void> completer = Completer<void>();
+   List<Map<dynamic, dynamic>> alldayOrders = <Map<dynamic, dynamic>>[];
+
+  // Récupérez la liste mise à jour des commandes pour la journée en cours
+  alldayOrders = await getAllOrders();
   if (!_isDayDataCalculated) {
+    
   String currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
-  print('Current Date: $currentDate'); 
-print('order details daily: $ordersDetails');
-  if (ordersDetails.isNotEmpty) {
-    for (var order in ordersDetails) {
-      String orderDate = order["date"].toString();
-      print('Order Date: $orderDate'); 
+  if (alldayOrders.isNotEmpty) {
+    for (var e in alldayOrders) {
+      String orderDate = e["date"].toString();
+    
 
       // Extract date and time parts from the orderDate string
       List<String> dateAndTimeParts = orderDate.split('Date: ');
@@ -735,15 +721,15 @@ print('order details daily: $ordersDetails');
       int year = int.parse(dateParts[2]);
 
       DateTime orderDateTime = DateTime(year, month, day, hour, minute);
-      print('Order Date Time===: $orderDateTime'); // Debug statement
+      //print('Order Date Time===: $orderDateTime'); // Debug statement
 
       if (orderDateTime.day == DateTime.now().day &&
           orderDateTime.month == DateTime.now().month &&
           orderDateTime.year == DateTime.now().year) {
         // Extract other order details and perform calculations
-        String totalPricies = order["totalPrice"];
-        String quantities = order["quantity"];
-        String profit = order["profit"];
+        String totalPricies = e["totalPrice"];
+        String quantities = e["quantity"];
+        String profit = e["profit"];
 
         double totalPrice = double.parse(totalPricies);
         double quantity = double.parse(quantities);
@@ -765,6 +751,9 @@ print('order details daily: $ordersDetails');
   print('Total Quantity Sold Today: ${totalQuantity.toStringAsFixed(2)}');
   print('Total Profit for Today: ${totalProfit.toStringAsFixed(2)}');
   _isDayDataCalculated = true;
+    } else {
+      alldayOrders.clear();
+      print(alldayOrders);
     }
     // Trigger the Completer to indicate that the operation is complete
   completer.complete();
@@ -773,18 +762,20 @@ print('order details daily: $ordersDetails');
 }
 
 //week
-Future<void> getOrdersForCurrentWeek() {
+Future<void> getOrdersForCurrentWeek() async {
  
   Completer<void> completer = Completer<void>();
 
   if (!_isWeekDataCalculated) {
+    getOrders();
+
   DateTime now = DateTime.now();
   DateTime startOfWeek = DateTime(now.year, now.month, now.day - now.weekday);
   DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
 
 print('order details weely: $ordersDetails');
-  if (ordersDetails.isNotEmpty) {
-    for (var order in ordersDetails) {
+  if (myOrders.isNotEmpty) {
+    for (var order in myOrders) {
       String orderDate = order["date"].toString();
 
       List<String> dateAndTimeParts = orderDate.split('Date: ');
@@ -817,7 +808,7 @@ print('order details weely: $ordersDetails');
     //ordersDetails.clear();
   }
 
-  notifyListeners();
+  //notifyListeners();
   print('Total Sales for Current Week: ${totalSales.toStringAsFixed(2)}');
   print('Total Quantity Sold this Week: ${totalQuantity.toStringAsFixed(2)}');
   print('Total Profit for Current Week: ${totalProfit.toStringAsFixed(2)}');
@@ -831,10 +822,17 @@ print('order details weely: $ordersDetails');
     }
 
   //Mounth
-  Future<void> getOrdersForCurrentMonth() {
+  Future<void> getOrdersForCurrentMonth() async {
   Completer<void> completer = Completer<void>();
 
   if (!_isMounthDataCalculated) {
+    ordersDetails.clear();
+    notifyListeners();
+    for (int a = 0; a < orders.length; a++) {
+      var val = await orders.getAt(a);
+      ordersDetails.add(val.details);
+      
+    }
     DateTime now = DateTime.now();
     int currentYear = now.year;
     int currentMonth = now.month;
@@ -877,7 +875,7 @@ print('order details weely: $ordersDetails');
     }
 
     // Notify listeners and print the calculated data
-    notifyListeners();
+   // notifyListeners();
     print('Total Sales for Current Month: ${_totalMounthSales.toStringAsFixed(2)}');
     print('Total Quantity Sold this Month: ${_totalMouthQuantity.toStringAsFixed(2)}');
     print('Total Profit for Current Month: ${_totalMounthProfit.toStringAsFixed(2)}');

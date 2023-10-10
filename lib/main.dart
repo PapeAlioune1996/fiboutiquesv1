@@ -1,3 +1,5 @@
+import 'dart:io';
+
 import 'package:fiboutiquesv1/Database/order_details.dart';
 import 'package:fiboutiquesv1/Database/product.dart';
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
@@ -7,11 +9,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:hive_flutter/hive_flutter.dart';
 import 'package:provider/provider.dart';
+import 'package:path/path.dart';
 
 import 'Providers/audio_rec_play_provider.dart';
 late Box products ;
 late Box orders ;
 void main() async {
+ // final dir = await path.getApplicationDocumentDirectory();
+// var path = Directory.current.path;
+ //Hive.init(path);
   WidgetsFlutterBinding.ensureInitialized();
   await Hive.initFlutter();
   Hive.registerAdapter(ProductAdapter());
@@ -19,8 +25,9 @@ void main() async {
   products = await Hive.openBox<Product>("products");
   orders = await Hive.openBox<Product>("orders");
 
-  //print('Path to products database: ${products.path}');
- // print('Path to orders database: ${orders.path}');
+
+  //orders.close();
+  
   runApp(
       ChangeNotifierProvider(
         create: (context) => TotalPriceProvider(),
@@ -29,8 +36,12 @@ void main() async {
     );
 }
 
+
+
 class MyApp extends StatelessWidget {
   const MyApp({super.key});
+
+
 
   // This widget is the root of your application.
   @override

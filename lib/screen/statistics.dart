@@ -17,6 +17,9 @@ class _StatisticsState extends State<Statistics> {
   bool _isDayButtonClicked = false;
   bool _isWeekButtonClicked = false;
   bool _isMonthButtonClicked = false;
+
+
+  List<Map<dynamic, dynamic>> allOrders = <Map<dynamic, dynamic>>[];
  
   @override
   void initState() {
@@ -27,10 +30,13 @@ class _StatisticsState extends State<Statistics> {
     super.initState();
   }
  
+ 
   Future<void> fetchData() async {
-    print("Fetching data...");
+   // print("Fetching data...");
   await Provider.of<DatabaseProvider>(context, listen: false).getOrders();
 }
+
+
 
 
   @override
@@ -117,7 +123,7 @@ class _StatisticsState extends State<Statistics> {
           onPressed:  _isMonthButtonClicked
         ? null // Disable the button if Day or Week button is clicked
         : ()   {
-         // await Provider.of<DatabaseProvider>(context, listen: false).saveOrder(); 
+         
               Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentDay();
             setState(() {
                 _isWeekButtonClicked = false;
@@ -132,7 +138,7 @@ class _StatisticsState extends State<Statistics> {
            onPressed:  _isDayButtonClicked
         ? null // Disable the button if Day or Week button is clicked
         : ()  {
-             // await Provider.of<DatabaseProvider>(context, listen: false).saveOrder(); 
+             
               Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentWeek();
              setState(() {
               _isWeekButtonClicked = false;
@@ -159,8 +165,15 @@ class _StatisticsState extends State<Statistics> {
           child: const Text('Month'),
         ),
         ElevatedButton(
-          onPressed: () {
+          onPressed: () async {
             // Add functionality for the fourth button here
+            allOrders = await Provider.of<DatabaseProvider>(context, listen: false).getAllOrders();
+            for (var e in allOrders){
+              print('all orders: $e');
+             
+            }
+            
+            print(allOrders.length);
           },
           child: const Text('Year'),
         ),
