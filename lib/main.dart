@@ -24,7 +24,7 @@ void main() async {
   runApp(
       ChangeNotifierProvider(
         create: (context) => TotalPriceProvider(),
-        child: MyApp(),
+        child: const MyApp(),
       ),
     );
 }

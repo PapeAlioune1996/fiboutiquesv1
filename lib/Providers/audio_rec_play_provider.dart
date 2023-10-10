@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:io';
 
-import 'package:audio_service/audio_service.dart';
 import 'package:audio_waveforms/audio_waveforms.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
@@ -73,7 +72,7 @@ class AudioProvider extends ChangeNotifier {
   }
 
   void stopAllAudioPlayback() {
-    AudioService.stop();
+   //AudioService.stop();
     stopPlayer(); // You can call your existing stopPlayer method here as well
   }
 

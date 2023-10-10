@@ -1,4 +1,5 @@
-import 'package:fiboutiquesv1/Database/order_details.dart';
+import 'dart:async';
+
 import 'package:fiboutiquesv1/Database/product.dart';
 import 'package:fiboutiquesv1/main.dart';
 import 'package:flutter/material.dart';
@@ -6,8 +7,6 @@ import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
-import 'dart:math';
-import 'package:intl/intl.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   TextEditingController searchController = TextEditingController();
@@ -28,13 +27,70 @@ class DatabaseProvider extends ChangeNotifier {
   bool searched = true;
 
   //
+  bool isUpdateButtonVisible = false;
+
+  //
   int selectedProductIndex = -1;
   
   //initialise 
   
-  double totalSales =   0.0;
-  double totalQuantity = 0.0;
-  double totalProfit = 0.0;
+  bool _isDayDataCalculated = false;
+  bool _isWeekDataCalculated = false;
+  bool _isMounthDataCalculated = false;
+
+  double _totalSales = 0;
+  double _totalQuantity = 0;
+  double _totalProfit = 0;
+
+  double _totalWeekSales = 0;
+  double _totalWeekQuantity  = 0;
+  double  _totalWeekProfit = 0;
+
+  //month
+  double _totalMounthSales = 0.0;
+  double _totalMouthQuantity = 0.0;
+  double _totalMounthProfit = 0.0;
+
+  // Getter methods for your total values and the flag
+  bool get isDayDataCalculated => _isDayDataCalculated;
+  double get totalSales => _totalSales;
+  double get totalQuantity => _totalQuantity;
+  double get totalProfit => _totalProfit;
+
+   bool get isWeekDataCalculated => _isWeekDataCalculated;
+   double get totalWeekSales => _totalWeekSales;
+   double get totalWeekQuantity =>  _totalWeekQuantity;
+   double get totalWeekProfit => _totalWeekProfit;
+   //
+
+   bool get isMounthDataCalculated => _isMounthDataCalculated;
+   double get totalMounthSales => _totalMounthSales;
+   double get totalMounthQuantity =>  _totalMouthQuantity;
+   double get totalMounthProfit => _totalMounthProfit;
+   //
+   bool productExists = false;
+  //
+  final StreamController<void> _ordersStreamController = StreamController<void>.broadcast();
+
+  Stream<void> get ordersStream => _ordersStreamController.stream;
+   
+   @override
+void dispose() {
+  _ordersStreamController.close();
+  super.dispose();
+}
+
+
+
+void _handleSubmitted(String productName) {
+  
+  productName = productNameController.text;
+                  print("$productName e°°°°°°FF!");
+                 
+  
+    
+  }
+   
 
 
   Future<void> getData() async {
@@ -50,6 +106,11 @@ class DatabaseProvider extends ChangeNotifier {
     searched = false;
     print("get called");
     notifyListeners();
+  }
+  //check if product exists
+   bool checkIfProductExists(String productName) {
+    bool exists = productsDetails.any((product) => product["name"] == productName);
+    return exists;
   }
 void addData(BuildContext context) {
   bool isProductExists = false;
@@ -85,7 +146,42 @@ void addData(BuildContext context) {
   getData();
   notifyListeners();
 }
+//update product
+void updateData(BuildContext context) {
+  String productName = productNameController.text;
+  String newBuyingPrice = productBuyingPriceController.text;
+  String newSellingPrice = productSellingPriceController.text;
 
+  
+  if (double.parse(newBuyingPrice) > double.parse(newSellingPrice)) {
+    Fluttertoast.showToast(msg: "Le prix d'achat ne peut pas être supérieur au prix de vente");
+    return;
+  }
+  int productIndex = productsDetails.indexWhere((product) => product["name"] == productName);
+
+  if (productIndex != -1) {
+  
+    productsDetails[productIndex]["buyingPrice"] = newBuyingPrice;
+    productsDetails[productIndex]["sellingPrice"] = newSellingPrice;
+
+    productExists = true;
+
+   
+    productNameController.clear();
+    productBuyingPriceController.clear();
+    productSellingPriceController.clear();
+
+    
+    notifyListeners();
+  } else {
+    Fluttertoast.showToast(msg: "Produit non trouvé");
+  }
+}
+
+
+
+
+ 
 //update Products
 void updateProductPrices(String productName, double newSellingPrice, double newBuyingPrice) {
   var productIndex = selectedProducts.indexWhere((product) => product["name"] == productName);
@@ -139,19 +235,18 @@ void updateProductPrices(String productName, double newSellingPrice, double newB
 
 //filtered product
   Future<void> filterProducts(String val) async {
-    print("Search query: $val"); // Debug statement
+    print("Search query: $val"); 
 
     if (val.isEmpty) {
-      // If the search query is empty, show all products
+      
       filteredProductsDetails = [];
       print('details $filteredProductsDetails');
     } else {
-      // Filter products based on the search query
-      filteredProductsDetails = await productsDetails.where((product) {
+      
+      filteredProductsDetails = productsDetails.where((product) {
         bool matches =
             product["name"].toLowerCase().contains(val.toLowerCase());
-        print(
-            "Product: ${product["name"]}, Matches: $matches"); // Debug statement
+        print("Product: ${product["name"]}, Matches: $matches"); // Debug statement
         return matches;
       }).toList();
     }
@@ -300,11 +395,18 @@ Future<void> saveOrder() async {
         },
       ),
     );
+    
+    
   }
 
   Fluttertoast.showToast(msg: "Orders Saved");
   selectedProducts.clear();
-  getOrders();
+  productBuyingPriceController1.clear();
+  productSellingPriceController1.clear();
+  productQuantityController.clear();
+   getOrders();
+  await getOrdersForCurrentDay();
+  await getOrdersForCurrentWeek();
   notifyListeners();
 }
 
@@ -360,6 +462,28 @@ Future<void> saveOrder() async {
     }
   } */
   void removeSelectedProduct(String productName) async {
+  var productIndex = selectedProducts.indexWhere((product) => product["name"] == productName);
+
+  if (productIndex != -1) {
+    if (productIndex < productBuyingPriceController1.length) {
+      productBuyingPriceController1.removeAt(productIndex);
+    }
+    if (productIndex < productSellingPriceController1.length) {
+      productSellingPriceController1.removeAt(productIndex);
+    }
+    if (productIndex < productQuantityController.length) {
+      productQuantityController.removeAt(productIndex);
+    }
+
+    selectedProducts.removeAt(productIndex);
+    productCount = selectedProducts.length;
+    notifyListeners();
+  } else {
+    print("Product not found in selected products!");
+  }
+}
+
+  /*void removeSelectedProduct(String productName) async {
   var productIndex = await selectedProducts.indexWhere((product) => product["name"] == productName);
 
   if (productIndex != -1) {
@@ -369,12 +493,17 @@ Future<void> saveOrder() async {
     productQuantityController.removeAt(productIndex);
 
     selectedProducts.removeAt(productIndex);
+    
+    productBuyingPriceController1.removeAt(productIndex);
+    productSellingPriceController1.removeAt(productIndex);
+    productQuantityController.removeAt(productIndex);
     productCount = selectedProducts.length;
+    print(productCount);
     notifyListeners();
   } else {
     print("Product not found in selected products!");
   }
-}
+} */
 
   /*void removeSelectedProduct(String productName) async {
   var productIndex = await selectedProducts.indexWhere((product) => product["name"] == productName);
@@ -397,13 +526,13 @@ Future<void> saveOrder() async {
   late Map<int, int> orderCountPerHour ;
    List<ChartData> chartData = []; // Initialize chartData as an empty list
 
-  getOrders() async {
+  Future<void> getOrders() async {
     ordersDetails.clear();
     notifyListeners();
     for (int a = 0; a < orders.length; a++) {
       var val = await orders.getAt(a);
       ordersDetails.add(val.details);
-      print(ordersDetails);
+      print('list : $ordersDetails');
     }
     hours = ordersDetails.map((order) {
       print(order);
@@ -429,6 +558,8 @@ Future<void> saveOrder() async {
         .map((entry) => ChartData(entry.key, entry.value))
         .toList();
     notifyListeners();
+    // Notify the stream about changes
+    _ordersStreamController.add(null);
   }
 //ajout produit
   addProductDialog(BuildContext context, Color color) {
@@ -462,12 +593,24 @@ Future<void> saveOrder() async {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
-              TextField(
+               GestureDetector(
+                
+                child: TextField(
                 controller: productBuyingPriceController,
                 keyboardType: TextInputType.number,
+                onTap: () {
+            String productName = productNameController.text;
+            productExists = checkIfProductExists(productName);
+               if (productExists) {
+               Fluttertoast.showToast(msg: "$productName exists!");
+               print("$productName exists!");
+              } else {
+               Fluttertoast.showToast(msg: "$productName does not exist!");
+               }
+             },
                 decoration: InputDecoration(
                   enabledBorder: OutlineInputBorder(
                       borderSide: BorderSide(color: color),
@@ -484,7 +627,9 @@ Future<void> saveOrder() async {
                   ),
                 ),
               ),
-              SizedBox(
+               ),
+              
+              const SizedBox(
                 height: 10,
               ),
               TextField(
@@ -506,7 +651,7 @@ Future<void> saveOrder() async {
                   ),
                 ),
               ),
-              SizedBox(
+              const SizedBox(
                 height: 10,
               ),
             ],
@@ -518,48 +663,59 @@ Future<void> saveOrder() async {
                 Navigator.pop(context);
               },
               child: Text("Annuler",
-                  style: TextStyle(color: color, fontSize: 15.sp))),
+                  style: TextStyle(color: color, fontSize: 15.sp),
+                  ),
+                  ),
           TextButton(
-            onPressed: () {
-              if (productNameController.text.isEmpty) {
-                Fluttertoast.showToast(msg: "Ajouter le nom du produit svp");
-              } else if (productBuyingPriceController.text.isEmpty ) {
-                Fluttertoast.showToast(msg: "Ajouter le prix d'achat svp");
-                
-              }
-               else if(double.parse(productBuyingPriceController.text) > double.parse(productSellingPriceController.text)){
-                   Fluttertoast.showToast(msg: "Le prix d'achat ne doit pas etre supperieur au prix de vente");
-                }
-               else if (productSellingPriceController.text.isEmpty) {
-                Fluttertoast.showToast(msg: "Ajouter le prix de reviens svp");
-              } else {
-                addData(context);
-                Navigator.pop(
-                    context); // Close the dialog after adding the product
-              }
-            },
-            child: Text(
-              "Enregistrer",
-              style: TextStyle(color: color, fontSize: 15.sp),
-            ),
-          ),
+  onPressed: () {
+    String productName = productNameController.text;
+    bool productExists = checkIfProductExists(productName);
+    if (productName.isEmpty) {
+      Fluttertoast.showToast(msg: "Ajouter le nom du produit svp");
+    } else if (productBuyingPriceController.text.isEmpty) {
+      Fluttertoast.showToast(msg: "Ajouter le prix d'achat svp");
+    } else if (double.parse(productBuyingPriceController.text) >
+        double.parse(productSellingPriceController.text)) {
+      Fluttertoast.showToast(
+          msg: "Le prix d'achat ne doit pas etre supperieur au prix de vente");
+    } else if (productSellingPriceController.text.isEmpty) {
+      Fluttertoast.showToast(msg: "Ajouter le prix de reviens svp");
+    } else {
+      if (productExists) {
+        
+        updateData(context);
+        Fluttertoast.showToast(msg: "Produit modifié avec succès");
+      } else {
+       
+        addData(context);
+        Fluttertoast.showToast(msg: "Produit ajouté avec succès");
+      }
+      Navigator.pop(context); 
+    }
+  },
+  child: Text(
+    productExists ? "Modifier" : "Enregistrer",
+    //isUpdateButtonVisible ? "Modifier" : "Enregistrer",
+    style: TextStyle(color: color, fontSize: 15.sp),
+  ),
+),
+
         ],
       ),
     );
   }
     
-void getOrdersForCurrentDay() {
+Future<void> getOrdersForCurrentDay() {
+ 
+    Completer<void> completer = Completer<void>();
+  if (!_isDayDataCalculated) {
   String currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
-  print('Current Date: $currentDate'); // Debug statement
-
- // double totalSales = 0;
- // double totalQuantity = 0;
- // double totalProfit = 0;
-
+  print('Current Date: $currentDate'); 
+print('order details daily: $ordersDetails');
   if (ordersDetails.isNotEmpty) {
     for (var order in ordersDetails) {
       String orderDate = order["date"].toString();
-      print('Order Date: $orderDate'); // Debug statement
+      print('Order Date: $orderDate'); 
 
       // Extract date and time parts from the orderDate string
       List<String> dateAndTimeParts = orderDate.split('Date: ');
@@ -593,32 +749,40 @@ void getOrdersForCurrentDay() {
         double quantity = double.parse(quantities);
         double profitValue = double.parse(profit);
 
-        totalSales += totalPrice;
-        totalQuantity += quantity;
-        totalProfit += profitValue;
+        _totalSales += totalPrice;
+        _totalQuantity += quantity;
+        _totalProfit += profitValue;
       }
       
     }
-    ordersDetails.clear();
+   //ordersDetails.clear();
     
+  } else {
+    print('liste vide');
   }
   notifyListeners();
   print('Total Sales for Today: ${totalSales.toStringAsFixed(2)}');
   print('Total Quantity Sold Today: ${totalQuantity.toStringAsFixed(2)}');
   print('Total Profit for Today: ${totalProfit.toStringAsFixed(2)}');
-  
+  _isDayDataCalculated = true;
+    }
+    // Trigger the Completer to indicate that the operation is complete
+  completer.complete();
+  // Return the Completer's future
+  return completer.future;
 }
 
 //week
-void getOrdersForCurrentWeek() {
+Future<void> getOrdersForCurrentWeek() {
+ 
+  Completer<void> completer = Completer<void>();
+
+  if (!_isWeekDataCalculated) {
   DateTime now = DateTime.now();
   DateTime startOfWeek = DateTime(now.year, now.month, now.day - now.weekday);
-  DateTime endOfWeek = startOfWeek.add(Duration(days: 7));
+  DateTime endOfWeek = startOfWeek.add(const Duration(days: 7));
 
-  //double totalSales = 0;
-  //double totalQuantity = 0;
-  //double totalProfit = 0;
-
+print('order details weely: $ordersDetails');
   if (ordersDetails.isNotEmpty) {
     for (var order in ordersDetails) {
       String orderDate = order["date"].toString();
@@ -645,20 +809,89 @@ void getOrdersForCurrentWeek() {
         double quantity = double.parse(quantities);
         double profitValue = double.parse(profit);
 
-        totalSales += totalPrice;
-        totalQuantity += quantity;
-        totalProfit += profitValue;
+        _totalWeekSales += totalPrice;
+        _totalWeekQuantity += quantity;
+        _totalWeekProfit += profitValue;
       }
     }
-    ordersDetails.clear();
+    //ordersDetails.clear();
   }
 
   notifyListeners();
   print('Total Sales for Current Week: ${totalSales.toStringAsFixed(2)}');
   print('Total Quantity Sold this Week: ${totalQuantity.toStringAsFixed(2)}');
   print('Total Profit for Current Week: ${totalProfit.toStringAsFixed(2)}');
+   _isWeekDataCalculated = true;
 }
+// Trigger the Completer to indicate that the operation is complete
+  completer.complete();
+  // Return the Completer's future
+  return completer.future;
 
+    }
+
+  //Mounth
+  Future<void> getOrdersForCurrentMonth() {
+  Completer<void> completer = Completer<void>();
+
+  if (!_isMounthDataCalculated) {
+    DateTime now = DateTime.now();
+    int currentYear = now.year;
+    int currentMonth = now.month;
+
+    DateTime startOfMonth = DateTime(currentYear, currentMonth, 1);
+    DateTime endOfMonth = DateTime(currentYear, currentMonth + 1, 0);
+
+    if (ordersDetails.isNotEmpty) {
+      for (var order in ordersDetails) {
+        
+      String orderDate = order["date"].toString();
+
+      List<String> dateAndTimeParts = orderDate.split('Date: ');
+      String timePart = dateAndTimeParts[0].replaceAll('Time: ', '').trim();
+      List<String> timeParts = timePart.split(':');
+      int hour = int.parse(timeParts[0].trim()) % 24;
+      int minute = int.parse(timeParts[1].trim());
+
+      List<String> dateParts = dateAndTimeParts[1].split('/');
+      int day = int.parse(dateParts[0]);
+      int month = int.parse(dateParts[1]);
+      int year = int.parse(dateParts[2]);
+
+      DateTime orderDateTime = DateTime(year, month, day, hour, minute);
+
+        if (orderDateTime.isAfter(startOfMonth) && orderDateTime.isBefore(endOfMonth)) {
+          String totalPrices = order["totalPrice"];
+          String quantities = order["quantity"];
+          String profit = order["profit"];
+
+          double totalPrice = double.parse(totalPrices);
+          double quantity = double.parse(quantities);
+          double profitValue = double.parse(profit);
+
+          _totalMounthSales += totalPrice;
+          _totalMouthQuantity += quantity;
+          _totalMounthProfit += profitValue;
+        }
+      }
+    }
+
+    // Notify listeners and print the calculated data
+    notifyListeners();
+    print('Total Sales for Current Month: ${_totalMounthSales.toStringAsFixed(2)}');
+    print('Total Quantity Sold this Month: ${_totalMouthQuantity.toStringAsFixed(2)}');
+    print('Total Profit for Current Month: ${_totalMounthProfit.toStringAsFixed(2)}');
+
+    // Mark month data as calculated
+    _isMounthDataCalculated= true;
+  }
+
+  // Trigger the Completer to indicate that the operation is complete
+  completer.complete();
+
+  // Return the Completer's future to handle async completion
+  return completer.future;
+}
 
    
 }

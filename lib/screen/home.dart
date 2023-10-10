@@ -306,7 +306,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                         itemCount:
                      databaseProvider.selectedProducts.length,
                     itemBuilder: (context, index) {
-                          databaseProvider.setText(index);
+                         // databaseProvider.setText(index);
                           var product = databaseProvider.selectedProducts[index];
                       return Row(
                         mainAxisAlignment: MainAxisAlignment.spaceAround,
@@ -446,7 +446,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                               Row(
                                 children: [
                                   
-                                IconButton(
+                                /*IconButton(
                                     onPressed: () {
                                       double newSellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                                       double newBuyingPrice = double.parse(databaseProvider.productBuyingPriceController1[index].text);
@@ -463,7 +463,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                                           color: Colors.white,
                                         ),
                                         ),
-                                        ),
+                                        ),*/
                                   IconButton(
                                     onPressed: () {
                                     double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);

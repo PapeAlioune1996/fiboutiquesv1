@@ -40,7 +40,7 @@ class HomeAppBar extends StatelessWidget {
                     Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => SettingScreen(),
+                          builder: (context) => const SettingScreen(),
                         ));
                   },
                   icon: Icon(Icons.settings, size: 30.sp, color: Colors.white)),
@@ -138,7 +138,7 @@ class HomeAppBar extends StatelessWidget {
                                 SizedBox(width: 8.w),
                                 IconButton(
                                   onPressed: () {},
-                                  icon: Icon(CupertinoIcons.cart),
+                                  icon: const Icon(CupertinoIcons.cart),
                                 ),
                                 SizedBox(width: 20.w),
                                 Expanded(
