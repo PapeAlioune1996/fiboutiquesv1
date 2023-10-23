@@ -1,4 +1,5 @@
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
+import 'package:fiboutiquesv1/widgets/bottom_navbar.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
@@ -14,9 +15,8 @@ class _StatisticsState extends State<Statistics> {
   List day = ['Day', 'Week', 'Month', 'Year'];
   Color mcolor = const Color.fromRGBO(54, 137, 131, 1);
   int index_color = 1;
-  bool _isDayButtonClicked = false;
-  bool _isWeekButtonClicked = false;
-  bool _isMonthButtonClicked = false;
+ 
+// Use databaseProvider to access the data and update the UI
 
 
   List<Map<dynamic, dynamic>> allOrders = <Map<dynamic, dynamic>>[];
@@ -41,14 +41,33 @@ class _StatisticsState extends State<Statistics> {
 
   @override
   Widget build(BuildContext context) {
+    final databaseProvider = Provider.of<DatabaseProvider>(context);
     return Scaffold(
       appBar: AppBar(
-        title: Text("Statistics",
-            style: TextStyle(fontSize: 20.sp, fontWeight: FontWeight.bold)),
+
+        leading: IconButton(
+          icon: Icon(Icons.arrow_back_ios_rounded,
+           color: mcolor,
+          ),
+          onPressed: () {
+             Navigator.of(context).pushAndRemoveUntil(
+                              MaterialPageRoute(
+                                builder: (context) => const Bottom(),
+                              ),
+                              (route) => false); // Ajoutez ici la logique de navigation vers l'écran précédent
+          },
+        ),
+        title: Text("Statistiques",
+            style: TextStyle(fontSize: 20.sp,
+             fontWeight: FontWeight.bold,
+             color: mcolor,
+             ),
+             
+            ),
         centerTitle: true,
       ),
-      body: StreamBuilder<void>(
-        stream: Provider.of<DatabaseProvider>(context).ordersStream,
+      body: StreamBuilder<List<Map<dynamic, dynamic>>>(
+        stream: databaseProvider.ordersStream,
         builder: (context, snapshot) {
          
           if (snapshot.connectionState == ConnectionState.waiting) {
@@ -105,7 +124,7 @@ class _StatisticsState extends State<Statistics> {
         ),
         Center(
         child:  Text(
-      'Sales',
+      'Mes ventes',
       style: TextStyle(
         color: Colors.black,
         fontSize: 16.sp,
@@ -114,42 +133,47 @@ class _StatisticsState extends State<Statistics> {
     ),
         ),
         
-    
-    Row(
+    Padding(
+      padding: const EdgeInsets.only(left: 10,right: 10),
+    child : Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+      crossAxisAlignment: CrossAxisAlignment.center,
       children: [
       
         ElevatedButton(
-          onPressed:  _isMonthButtonClicked
+          onPressed:  Provider.of<DatabaseProvider>(context, listen: false).isDayDataCalculated  
         ? null // Disable the button if Day or Week button is clicked
-        : ()   {
+        : ()   async {
          
-              Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentDay();
+              await Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentDay();
             setState(() {
-                _isWeekButtonClicked = false;
-                _isDayButtonClicked = false;
-                _isMonthButtonClicked = true; 
+              Provider.of<DatabaseProvider>(context, listen: false).setIsSelectedButton();
             });
           },
-          child: const Text('Day'),
+          child: const Text('Day',
+          style: TextStyle(
+            color: Color(0xff368983),
+          ),
+          ),
         ),
         
         ElevatedButton(
-           onPressed:  _isDayButtonClicked
+           onPressed: Provider.of<DatabaseProvider>(context, listen: false).isWeekDataCalculated 
         ? null // Disable the button if Day or Week button is clicked
         : ()  {
              
               Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentWeek();
              setState(() {
-              _isWeekButtonClicked = false;
-                _isDayButtonClicked = true;
-                _isMonthButtonClicked = false; 
+              Provider.of<DatabaseProvider>(context, listen: false).setIsSelectedButton();
              });
           },
-          child: const Text('Week'),
+          child: const Text('Week',
+           style: TextStyle(
+            color: Color(0xff368983),),
+          ),
         ),
         ElevatedButton(
-          onPressed: _isWeekButtonClicked
+          onPressed: Provider.of<DatabaseProvider>(context, listen: false).isMounthDataCalculated
       ? null // Disable the button if it's already clicked
       : () async {
           // Fetch data for the current month
@@ -157,53 +181,61 @@ class _StatisticsState extends State<Statistics> {
 
           // Set the state to update the UI
           setState(() {
-            _isMonthButtonClicked = false;
-            _isDayButtonClicked = false;
-            _isWeekButtonClicked = true;
+            Provider.of<DatabaseProvider>(context, listen: false).setIsSelectedButton();
           });
         },
-          child: const Text('Month'),
+          child: const Text('Month',
+           style: TextStyle(
+            color: Color(0xff368983),),
+            ),
         ),
-        ElevatedButton(
+       Visibility(
+        visible: false,
+        child:  ElevatedButton(
           onPressed: () async {
             // Add functionality for the fourth button here
-            allOrders = await Provider.of<DatabaseProvider>(context, listen: false).getAllOrders();
-            for (var e in allOrders){
-              print('all orders: $e');
+            //await Provider.of<DatabaseProvider>(context, listen: false).getOrdersForCurrentDay();
+           // for (var e in allOrders){
+           //   print('all orders: $e');
              
-            }
+           // }
             
-            print(allOrders.length);
+           // print(allOrders.length);
           },
-          child: const Text('Year'),
+          child: const Text('Year',
+           style: TextStyle(
+            color: Color(0xff368983),
+            ),
+            ),
+        ),
         ),
       ],
     ),
-
+),
      // Add the DataTable widget with three columns: Total Price, Quantity, and Profit
     Consumer<DatabaseProvider>(
               builder: (context, databaseProvider, child) {
-                String totalSalesText = !_isMonthButtonClicked
+                String totalSalesText = Provider.of<DatabaseProvider>(context, listen: false).isMounthDataCalculated
     ? databaseProvider.totalMounthSales.toStringAsFixed(2)
-    : !_isDayButtonClicked
+    : Provider.of<DatabaseProvider>(context, listen: false).isDayDataCalculated
         ? databaseProvider.totalSales.toStringAsFixed(2)
-        : !_isWeekButtonClicked
+        : Provider.of<DatabaseProvider>(context, listen: false).isWeekDataCalculated
             ? databaseProvider.totalWeekSales.toStringAsFixed(2)
             : '';
 
-String totalQuantityText = !_isMonthButtonClicked
+String totalQuantityText = Provider.of<DatabaseProvider>(context, listen: false).isMounthDataCalculated
     ? databaseProvider.totalMounthQuantity.toStringAsFixed(2)
-    : !_isDayButtonClicked
+    : Provider.of<DatabaseProvider>(context, listen: false).isDayDataCalculated
         ? databaseProvider.totalQuantity.toStringAsFixed(2)
-        : !_isWeekButtonClicked
+        : Provider.of<DatabaseProvider>(context, listen: false).isWeekDataCalculated
             ? databaseProvider.totalWeekQuantity.toStringAsFixed(2)
             : '';
 
-String totalProfitText = !_isMonthButtonClicked
+String totalProfitText = Provider.of<DatabaseProvider>(context, listen: false).isMounthDataCalculated
     ? databaseProvider.totalMounthProfit.toStringAsFixed(2)
-    : !_isDayButtonClicked
+    : Provider.of<DatabaseProvider>(context, listen: false).isDayDataCalculated
         ? databaseProvider.totalProfit.toStringAsFixed(2)
-        : !_isWeekButtonClicked
+        : Provider.of<DatabaseProvider>(context, listen: false).isWeekDataCalculated
             ? databaseProvider.totalWeekProfit.toStringAsFixed(2)
             : '';
 

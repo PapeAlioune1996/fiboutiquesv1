@@ -21,6 +21,7 @@ def flutterVersionName = localProperties.getProperty('flutter.versionName')
 if (flutterVersionName == null) {
     flutterVersionName = '1.0'
 }
+apply plugin : 'com.google.gms.google-services'
 
 android {
     namespace "com.example.fiboutiquesv1"
@@ -64,4 +65,9 @@ flutter {
     source '../..'
 }
 
-dependencies {}
+dependencies {
+    implementation platform('com.google.firebase:firebase-bom:32.3.1')
+    implementation("com.google.firebase:firebase-auth")
+    implementation 'com.google.firebase:firebase-analytics'
+    implementation 'com.google.zxing:core:3.3.0'
+}

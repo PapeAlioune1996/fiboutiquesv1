@@ -6,6 +6,9 @@
 <string>Need microphone access for recording</string>
 <key>NSPhotoLibraryUsageDescription</key>
 <string>Need photo library access for saving audio</string>
+<key>NSCameraUsageDescription</key>
+<string>Can we access your camera to scan barcodes?</string>
+
   <key>CFBundleDevelopmentRegion</key>
   <string>en</string>
   <key>CFBundleExecutable</key>

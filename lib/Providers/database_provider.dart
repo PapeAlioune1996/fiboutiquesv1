@@ -1,19 +1,50 @@
+// ignore_for_file: avoid_print
+
 import 'dart:async';
 
 import 'package:fiboutiquesv1/Database/order_details.dart';
 import 'package:fiboutiquesv1/Database/product.dart';
+import 'package:fiboutiquesv1/Database/user.dart';
 import 'package:fiboutiquesv1/main.dart';
+import 'package:firebase_core/firebase_core.dart';
+import 'package:firebase_database/firebase_database.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:flutter_barcode_scanner/flutter_barcode_scanner.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
-import 'package:hive/hive.dart';
 import 'package:intl/intl.dart';
 import 'dart:core';
+
+import 'package:provider/provider.dart';
 
 class DatabaseProvider extends ChangeNotifier {
   TextEditingController searchController = TextEditingController();
   TextEditingController productNameController = TextEditingController();
   TextEditingController productSellingPriceController = TextEditingController();
+  TextEditingController productQrName = TextEditingController();
+ 
+
+ bool _isQrCodeTextFieldVisible = false;
+
+bool get isQrCodeTextFieldVisible => _isQrCodeTextFieldVisible;
+
+set isQrCodeTextFieldVisible(bool value) {
+  _isQrCodeTextFieldVisible = value;
+  notifyListeners();
+}
+
+void toggleQrCodeTextFieldVisibility() {
+  _isQrCodeTextFieldVisible = !_isQrCodeTextFieldVisible;
+  notifyListeners();
+}
+
+
+
+
+
+
   
   TextEditingController productBuyingPriceController = TextEditingController();
    List<TextEditingController> productBuyingPriceController1 = [];
@@ -34,6 +65,11 @@ class DatabaseProvider extends ChangeNotifier {
 
   //
   int selectedProductIndex = -1;
+
+  //
+  late FirebaseDatabase firebaseDatabase;
+    
+  late DatabaseReference databaseReference;
   
   
   //initialise 
@@ -49,7 +85,6 @@ class DatabaseProvider extends ChangeNotifier {
   double _totalWeekSales = 0;
   double _totalWeekQuantity  = 0;
   double  _totalWeekProfit = 0;
-
   //month
   double _totalMounthSales = 0.0;
   double _totalMouthQuantity = 0.0;
@@ -74,9 +109,59 @@ class DatabaseProvider extends ChangeNotifier {
    //
    bool productExists = false;
   //
-  final StreamController<void> _ordersStreamController = StreamController<void>.broadcast();
+    void setIsSelectedButton() {
+      if(!_isDayDataCalculated){
+        _isDayDataCalculated=false;
+        _isMounthDataCalculated = true;
+        _isWeekDataCalculated = false;
 
-  Stream<void> get ordersStream => _ordersStreamController.stream;
+        //remettre à ero total day
+        _totalSales = 0.0;
+        _totalProfit = 0.0;
+        _totalQuantity = 0.0;
+
+        //total week
+        _totalWeekProfit = 0.0;
+        _totalWeekQuantity = 0.0;
+        _totalWeekSales = 0.0;
+
+      }else if(!_isWeekDataCalculated) {
+        _isDayDataCalculated=true;
+        _isMounthDataCalculated = false;
+        _isWeekDataCalculated = false;
+
+         //total week
+        _totalWeekProfit = 0.0;
+        _totalWeekQuantity = 0.0;
+        _totalWeekSales = 0.0;
+
+        //tottal mounth
+        _totalMounthProfit = 0.0;
+        _totalMounthSales = 0.0;
+        _totalMouthQuantity = 0.0;
+       
+      } else if(!_isMounthDataCalculated){
+        _isDayDataCalculated=false;
+        _isMounthDataCalculated = false;
+        _isWeekDataCalculated = true;
+
+        
+        //tottal mounth
+        _totalMounthProfit = 0.0;
+        _totalMounthSales = 0.0;
+        _totalMouthQuantity = 0.0;
+
+         //remettre à ero total day
+        _totalSales = 0.0;
+        _totalProfit = 0.0;
+        _totalQuantity = 0.0;
+      }
+
+    }
+  //
+  final StreamController<List<Map<dynamic, dynamic>>> _ordersStreamController = StreamController<List<Map<dynamic, dynamic>>>.broadcast();
+
+  Stream<List<Map<dynamic, dynamic>>> get ordersStream => _ordersStreamController.stream;
    
    @override
 void dispose() {
@@ -84,7 +169,178 @@ void dispose() {
   super.dispose();
 }
 
-   
+//
+
+
+
+ 
+//
+
+/*Future<void> fetchProductsFromFirebaseAndSaveToHive() async {
+  late StreamSubscription<DatabaseEvent> productSubscription;
+  List<Map<dynamic, dynamic>> productsDetails = [];
+  List<Map<dynamic, dynamic>> convertedProducts = [];
+
+  FirebaseException? error0;
+
+  final database = FirebaseDatabase.instance;
+  databaseReference = database.ref('ProductTable');
+
+  print('all product :  $databaseReference');
+  database.setLoggingEnabled(false);
+  if (!kIsWeb) {
+    database.setPersistenceEnabled(true);
+    database.setPersistenceCacheSizeBytes(10000000);
+  }
+
+  final productQuery = databaseReference;
+
+  productSubscription = productQuery.onValue.listen(
+    (DatabaseEvent event) {
+      if (event.snapshot.value != null && event.snapshot.value is Map<dynamic, dynamic>) {
+        Map<dynamic, dynamic> data = event.snapshot.value as Map<dynamic, dynamic>;
+
+        productsDetails.clear();
+        data.forEach((key, productData) {
+          productsDetails.add({key: productData});
+        });
+
+        convertedProducts.clear();
+        for (var productData in productsDetails) {
+          productData.forEach((key, value) async {
+            if (key is String) {
+              if (key.length < 1000 && int.tryParse(key) != null) {
+                convertedProducts.add({
+                  'ProductName': productData[key]['ProductName'],
+                  'BuyingPrice': productData[key]['BuyingPrice'],
+                  'SellingPrice': productData[key]['SellingPrice'],
+                  'productqrname': key,
+                });
+              } else if (RegExp(r'^[a-zA-Z]+$').hasMatch(key)) {
+                convertedProducts.add({
+                  'ProductName': key,
+                  'BuyingPrice': productData[key]['BuyingPrice'],
+                  'SellingPrice': productData[key]['SellingPrice'],
+                });
+              }
+            }
+          });
+        }
+
+        print('convert: $convertedProducts');
+        // Ouvrir la boîte Hive
+
+        for (var productMap in convertedProducts) {
+          var existingProduct = products.values.any(
+  (element) =>
+     // element.productqrname == productMap['productqrname'] &&
+      element.ProductName == productMap['ProductName'],
+);
+
+          if (!existingProduct)  {
+            Product product = Product.fromMap(productMap);
+             products.add(product); 
+          }else {
+            print('dddddddddddd');
+          }
+        }
+        print("bsr: ${convertedProducts.length}");
+      } else {
+        print('Invalid data format: ${event.snapshot.value}');
+      }
+    },
+    onError: (Object o) {
+      final error = o as FirebaseException;
+      print('Error: ${error.code} ${error.message}');
+    },
+  );
+}*/
+Future<void> fetchProductsFromFirebaseAndSaveToHive() async {
+  late StreamSubscription<DatabaseEvent> productSubscription;
+  List<Map<dynamic, dynamic>> productsDetails = [];
+List<Map<String, dynamic>> convertedProducts = [];
+ 
+
+  FirebaseException? error0;
+ 
+
+  final database = FirebaseDatabase.instance;
+
+    databaseReference = database.ref('ProductTable');
+
+ print('all product :  $databaseReference');
+    database.setLoggingEnabled(false);
+    if (!kIsWeb) {
+      database.setPersistenceEnabled(true);
+      database.setPersistenceCacheSizeBytes(10000000);
+    }
+
+     final productQuery = databaseReference;
+      
+    productSubscription = productQuery.onValue.listen(
+      (DatabaseEvent event) {
+       if (event.snapshot.value != null && event.snapshot.value is Map<dynamic, dynamic>) {
+        //print('Child added: ${event.snapshot.}');
+        Map<dynamic, dynamic> data = event.snapshot.value as Map<dynamic, dynamic>;
+        
+        productsDetails.clear();
+        data.forEach((key, productData) {
+      // print('Original Data: { $key: $productData }'); 
+
+       productsDetails.add({key: productData});
+      // print('firebase product detail: $productsDetails'); 
+     });
+     print("pd: ${productsDetails.length}"); 
+     convertedProducts.clear();
+        for (var productData in productsDetails) {
+    productData.forEach((key, value) async {
+
+      if (key is String) {
+        if (key.length < 1000 && int.tryParse(key) != null) {
+          // Si la clé est un QR code, convertissez les valeurs appropriées
+          
+          convertedProducts.add({
+            'ProductName': productData[key]['ProductName'],
+            'BuyingPrice': productData[key]['BuyingPrice'],
+            'SellingPrice': productData[key]['SellingPrice'],
+            'productqrname': key,
+          });
+        } else if (RegExp(r'^[a-zA-Z]+$').hasMatch(key)) {
+          // Si la clé est une chaîne alphabétique, convertissez les valeurs appropriées
+          convertedProducts.add({
+            'ProductName': key,
+            'BuyingPrice': productData[key]['BuyingPrice'],
+            'SellingPrice': productData[key]['SellingPrice'],
+          });
+        }
+      }
+    });
+  }
+      print('convert: $convertedProducts'); 
+      //var  existsp = convertedProducts.any((product) => product["ProductName"].toString().toLowerCase() == e["ProductName"].toLowerCase());
+      
+      for(var e in convertedProducts){
+      bool productExists = products.values.any((product) => product.productName == e['ProductName']);
+     if (!productExists) {
+    Product product = Product.fromMap(e);
+    products.add(product);
+  }
+ 
+      }
+      print("bsr: ${convertedProducts.length}"); 
+      } else {
+        print('Invalid data format: ${event.snapshot.value}');
+      }
+        
+      },
+      onError: (Object o) {
+        final error = o as FirebaseException;
+        print('Error: ${error.code} ${error.message}');
+      },
+    );
+  
+}
+
 
 
   Future<void> getData() async {
@@ -95,6 +351,9 @@ void dispose() {
     }
     
       print('product details $productsDetails');
+      for(var e in productsDetails){
+        print('product : $e');
+      }
    // filteredProductsDetails = productsDetails;
    // print('product filteredProductsDetails $filteredProductsDetails');
     searched = false;
@@ -103,15 +362,20 @@ void dispose() {
   }
   //check if product exists
    bool checkIfProductExists(String productName) {
-    bool exists = productsDetails.any((product) => product["name"] == productName);
+    bool exists = productsDetails.any((product) => product["ProductName"].toString().toLowerCase() == productName.toLowerCase());
+    return exists;
+  }
+   bool checkIfProductqrExists(String productqrName) {
+    bool exists = productsDetails.any((product) => product["productqrname"].toString().toLowerCase() == productqrName.toLowerCase());
     return exists;
   }
 void addData(BuildContext context) {
   bool isProductExists = false;
-
-  // Check if the product name already exists in the database
+  final providers = context.read<DatabaseProvider>();
+  
+  
   for (var product in productsDetails) {
-    if (product["name"] == productNameController.text) {
+    if (product["ProductName"] == productNameController.text) {
       isProductExists = true;
       break;
     }
@@ -120,23 +384,42 @@ void addData(BuildContext context) {
   if (isProductExists) {
     Fluttertoast.showToast(msg: "Ce produit exist déjà!");
   } else {
-    // Product name doesn't exist, add the product to the database
-    products.put(
+  
+    if(!providers.isQrCodeTextFieldVisible){
+      products.put(
       productNameController.text,
       Product(
         details: {
-          "name": productNameController.text,
-          "buyingPrice": productBuyingPriceController.text,
-          "sellingPrice": productSellingPriceController.text,
+          "ProductName": productNameController.text,
+          "BuyingPrice": productBuyingPriceController.text,
+          "SellingPrice": productSellingPriceController.text,
         },
       ),
     );
-    Fluttertoast.showToast(msg: "Product added successfully");
+    Fluttertoast.showToast(msg: "Product without QR added successfully");
+    }else {
+      products.put(
+      productNameController.text,
+      Product(
+        details: {
+          "ProductName":  productQrName.text,
+          "BuyingPrice": productBuyingPriceController.text,
+          "SellingPrice": productSellingPriceController.text,
+          "productqrname": productNameController.text,
+        },
+      ),
+    );
+    providers.isQrCodeTextFieldVisible = false;
+    Fluttertoast.showToast(msg: "Product with QR added successfully");
+    }
+    
   }
 
   productNameController.clear();
   productSellingPriceController.clear();
   productBuyingPriceController.clear();
+  productQrName.clear();
+  
   getData();
   notifyListeners();
 }
@@ -145,18 +428,21 @@ void updateData(BuildContext context) {
   String productName = productNameController.text;
   String newBuyingPrice = productBuyingPriceController.text;
   String newSellingPrice = productSellingPriceController.text;
+  String newProducQrtName = productQrName.text;
 
   
   if (double.parse(newBuyingPrice) > double.parse(newSellingPrice)) {
     Fluttertoast.showToast(msg: "Le prix d'achat ne peut pas être supérieur au prix de vente");
     return;
   }
-  int productIndex = productsDetails.indexWhere((product) => product["name"] == productName);
+  int productIndex = productsDetails.indexWhere((product) => product["ProductName"].toString().toLowerCase() == productName.toLowerCase());
 
   if (productIndex != -1) {
   
-    productsDetails[productIndex]["buyingPrice"] = newBuyingPrice;
-    productsDetails[productIndex]["sellingPrice"] = newSellingPrice;
+    productsDetails[productIndex]["BuyingPrice"] = newBuyingPrice;
+    productsDetails[productIndex]["SellingPrice"] = newSellingPrice;
+    productsDetails[productIndex]["productqrname"] = newProducQrtName;
+    
 
     productExists = true;
 
@@ -164,21 +450,17 @@ void updateData(BuildContext context) {
     productNameController.clear();
     productBuyingPriceController.clear();
     productSellingPriceController.clear();
+    productQrName.clear();
 
-    
     notifyListeners();
   } else {
     Fluttertoast.showToast(msg: "Produit non trouvé");
   }
 }
 
-
-
-
- 
 //update Products
 void updateProductPrices(String productName, double newSellingPrice, double newBuyingPrice) {
-  var productIndex = selectedProducts.indexWhere((product) => product["name"] == productName);
+  var productIndex = selectedProducts.indexWhere((product) => product["ProductName"] == productName);
   if (productIndex != -1) {
     // Check if buyingPrice is not higher than sellingPrice
     if (newBuyingPrice > newSellingPrice) {
@@ -186,32 +468,12 @@ void updateProductPrices(String productName, double newSellingPrice, double newB
       return ; 
     }
 
-    selectedProducts[productIndex]["sellingPrice"] = newSellingPrice.toString();
-    selectedProducts[productIndex]["buyingPrice"] = newBuyingPrice.toString();
+    selectedProducts[productIndex]["SellingPrice"] = newSellingPrice.toString();
+    selectedProducts[productIndex]["BuyingPrice"] = newBuyingPrice.toString();
     notifyListeners();
   }
 }
 
-
-
-  /*void addData(BuildContext context) {
-    products.put(
-      productNameController.text,
-      Product(
-        details: {
-          "name": productNameController.text,
-          "buyingPrice": productBuyingPriceController.text,
-          "sellingPrice": productSellingPriceController.text,
-        },
-      ),
-    );
-    Fluttertoast.showToast(msg: "Product added successfully");
-    productNameController.clear();
-    productSellingPriceController.clear();
-    productBuyingPriceController.clear();
-    getData();
-    notifyListeners();
-  }*/
 
   deleteData() {
     products.deleteAt(selectedIndex);
@@ -239,8 +501,8 @@ void updateProductPrices(String productName, double newSellingPrice, double newB
       
       filteredProductsDetails = productsDetails.where((product) {
         bool matches =
-            product["name"].toLowerCase().contains(val.toLowerCase());
-        print("Product: ${product["name"]}, Matches: $matches"); // Debug statement
+            product["ProductName"].toLowerCase().contains(val.toLowerCase());
+        print("Product: ${product["ProductName"]}, Matches: $matches"); // Debug statement
         return matches;
       }).toList();
     }
@@ -277,44 +539,33 @@ void setText(int index) {
   }
 }
 
-//////////////////
-/*void generateControllers(List<Map<dynamic, dynamic>> selectedProducts) {
-  productSellingPriceController1.clear();
-  productBuyingPriceController1.clear();
 
-  for (int i = 0; i < selectedProducts.length; i++) {
-    TextEditingController buyingPriceController =
-        TextEditingController(text: selectedProducts[i]["buyingPrice"]);
-       
-    TextEditingController sellingPriceController =
-        TextEditingController(text: selectedProducts[i]["sellingPrice"]);
-      
-
-    productBuyingPriceController1.add(buyingPriceController);
-    productSellingPriceController1.add(sellingPriceController);
-     print(productBuyingPriceController1);
-      print(productSellingPriceController1);
-  }
-
- // if (productQuantityController == null || productQuantityController.isEmpty) {
-    productQuantityController = List.generate(
-        selectedProducts.length, (index) => TextEditingController(text: "1.0"),
-       
-        );
-        print(productQuantityController);
-
- // }
-}*/
-//////////////////
 void generateControllers(Map<dynamic, dynamic> selectedProducts) {
 
       TextEditingController buyingPriceController =
-      TextEditingController(text: selectedProducts["buyingPrice"]);
+      TextEditingController(text: selectedProducts["BuyingPrice"]);
       TextEditingController sellingPriceController =
-      TextEditingController(text: selectedProducts["sellingPrice"]);
+      TextEditingController(text: selectedProducts["SellingPrice"]);
 
       productBuyingPriceController1.add(buyingPriceController);
       productSellingPriceController1.add(sellingPriceController);
+
+    print('${productBuyingPriceController1.length}');
+   
+    productQuantityController.add(TextEditingController(text: "1.0") );
+ 
+}
+
+
+void generateControllerscodbar(Map<dynamic, dynamic> selectedProducts) {
+
+      TextEditingController buyingPriceControllersc =
+      TextEditingController(text: selectedProducts["BuyingPrice"]);
+      TextEditingController sellingPriceControllersc =
+      TextEditingController(text: selectedProducts["SellingPrice"]);
+
+      productBuyingPriceController1.add(buyingPriceControllersc);
+      productSellingPriceController1.add(sellingPriceControllersc);
 
     print('${productBuyingPriceController1.length}');
    
@@ -327,19 +578,19 @@ void generateControllers(Map<dynamic, dynamic> selectedProducts) {
   TextEditingController selectedText = TextEditingController();
   List<Map<dynamic, dynamic>> selectedProducts = <Map<dynamic, dynamic>>[];
 void onSelect(String productName) async {
-  // Find the product by name in productsDetails list
-  var productIndex = productsDetails.indexWhere((product) => product["name"] == productName);
+
+  var productIndex = productsDetails.indexWhere((product) => product["ProductName"] == productName);
 if (selectedProducts.isEmpty) {
-    // Initialize the list if it's empty
+    
     selectedProducts = <Map<dynamic, dynamic>>[];
   }
   if (productIndex != -1) {
     bool isAlreadySelected = false;
 
     for (var element in selectedProducts) {
-      if (productsDetails[productIndex]["name"].toString().contains(element["name"])) {
+      if (productsDetails[productIndex]["ProductName"].toString().contains(element["ProductName"])) {
         isAlreadySelected = true;
-        Fluttertoast.showToast(msg: "${element["name"]} already available");
+        Fluttertoast.showToast(msg: "${element["ProductName"]} already available");
         break;
       }
     }
@@ -349,11 +600,12 @@ if (selectedProducts.isEmpty) {
         productsDetails[productIndex]["quantity"] = 1.0;
       }
       selectedProducts.add(productsDetails[productIndex]);
+      generateControllers(productsDetails[productIndex]);
       
     }
    
    
-   generateControllers(productsDetails[productIndex]);
+
     searched = false;
     isOpen = !isOpen;
 
@@ -367,30 +619,36 @@ if (selectedProducts.isEmpty) {
 Future<void> saveOrder() async {
   DateTime dateTime = DateTime.now();
   for (var element in selectedProducts) {
-    String name = element["name"];
+    String name = element["ProductName"];
+    String productqrname = element["productqrname"]?? "";
     String sellingPrice = productSellingPriceController1[selectedProducts.indexOf(element)].text;
     String buyingPrice = productBuyingPriceController1[selectedProducts.indexOf(element)].text;
     String quantity = productQuantityController[selectedProducts.indexOf(element)].text;
     double totalPrice = double.parse(sellingPrice) * double.parse(quantity);
     double profit = (double.parse(sellingPrice) * double.parse(quantity)) - (double.parse(buyingPrice) * double.parse(quantity));
-
-    await orders.put(
+     
+   
+        await orders.put(
       "order${orders.length}",
       Product(
         details: {
           "productName": name,
           "orderNo": "${orders.length}",
           "date": "Time: ${dateTime.minute} : ${dateTime.hour}  Date: ${dateTime.day}/${dateTime.month}/${dateTime.year}",
-          "sellingPrice": sellingPrice,
-          "buyingPrice": buyingPrice,
+          "SellingPrice": sellingPrice,
+          "BuyingPrice": buyingPrice,
           "quantity": quantity,
           "totalPrice": "$totalPrice",
-          "profit":"$profit"
+          "profit":"$profit",
+          "productqrname" : productqrname
         },
       ),
     );
+    
+
+    
     //myOrders.add(value);
-    notifyListeners();
+    
     
   }
 
@@ -399,65 +657,16 @@ Future<void> saveOrder() async {
   productBuyingPriceController1.clear();
   productSellingPriceController1.clear();
   productQuantityController.clear();
-   getOrders();
-  //await getOrdersForCurrentDay();
- // await getOrdersForCurrentWeek();
+  
+  
+  await getOrders();
+  notifyListeners();
+   _ordersStreamController.add(getAllOrders());
   
 }
 
-  /*saveOrder() async {
-    //double totalPrice = 0.0;
-    int index = -1;
-    for (var element in selectedProducts) {
-      index++;
-      
-      print(element);
-      DateTime dateTime = DateTime.now();
-      String name = element["name"];
-      print(element["name"]);
-      String sellingPrice = productSellingPriceController1[index].text;
-      String buyingPrice = productBuyingPriceController1[index].text;
-      String quantity = productQuantityController[index].text;
-      //increment total price
-      double totalPrice = ( double.parse(element["sellingPrice"])* double.parse(quantity));
-       print("orders :${orders.length}");
-      orders
-          .put(
-              "order${orders.length}",
-             
-              Product(details: {
-                "productName": name,
-                "orderNo": "${orders.length}",
-                "date":
-                    "Time: ${dateTime.minute} : ${dateTime.hour}  Date: ${dateTime.day}/${dateTime.month}/${dateTime.year}",
-                "sellingPrice": sellingPrice,
-                "buyingPrice": buyingPrice,
-                "quantity": quantity,
-                "totalPrice": "${double.parse(sellingPrice) * double.parse(quantity)}",
-              }))
-          .then((value) => Fluttertoast.showToast(msg: "Order Saved"));
-      selectedProducts.clear();
-      getOrders();
-      notifyListeners();
-      break;
-    }
-  }*/
-  //
-  // Method to remove a selected product based on its index
- /* void removeSelectedProduct(int index) {
-    if (index >= 0 && index < selectedProducts.length) {
-      selectedProducts.removeAt(index);
-      print("Product removed from selectedProductDetails");
-      productCount = selectedProducts.length;
-      print("Number of Products: $productCount");
-      print('Removing product at index: $index');
-      notifyListeners(); // Notify listeners after removing the product
-    } else {
-      print("Invalid index to remove!"); // Debug statement for invalid index
-    }
-  } */
   void removeSelectedProduct(String productName) async {
-  var productIndex = selectedProducts.indexWhere((product) => product["name"] == productName);
+  var productIndex = selectedProducts.indexWhere((product) => product["ProductName"] == productName);
 
   if (productIndex != -1) {
     if (productIndex < productBuyingPriceController1.length) {
@@ -468,10 +677,11 @@ Future<void> saveOrder() async {
     }
     if (productIndex < productQuantityController.length) {
       productQuantityController.removeAt(productIndex);
-    }
+    } 
 
     selectedProducts.removeAt(productIndex);
     productCount = selectedProducts.length;
+    print(productCount);
     notifyListeners();
   } else {
     print("Product not found in selected products!");
@@ -485,7 +695,8 @@ Future<void> saveOrder() async {
 // fonction qui retour la liste des ventes
 // I get all Orders
   List<OrderDetails> a = [];
-Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
+  
+  List<Map<dynamic, dynamic>> getAllOrders() {
     List<Map<dynamic, dynamic>> allOrders = <Map<dynamic, dynamic>>[];
    
   
@@ -493,7 +704,7 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
   allOrders.clear();
   notifyListeners();
     for (int a = 0; a < orders.length; a++){
-      var val = await orders.getAt(a);
+      var val =  orders.getAt(a);
       allOrders.add(val.details);
     }
     return allOrders;
@@ -503,15 +714,13 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
   Future<void> getOrders() async {
    
     ordersDetails.clear();
-    ///myOrders.clear();
+    //myOrders.clear();
    List<Map<dynamic, dynamic>> dailyList = [];
     notifyListeners();
     for (int a = 0; a < orders.length; a++) {
       var val = await orders.getAt(a);
       ordersDetails.add(val.details);
       dailyList.add(val.details);
-      
-     
     }
     myOrders = dailyList;
      print('list : $myOrders');
@@ -543,10 +752,12 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
         .toList();
     notifyListeners();
     // Notify the stream about changes
-    _ordersStreamController.add(null);
+    _ordersStreamController.add(getAllOrders());
   }
 //ajout produit
   addProductDialog(BuildContext context, Color color) {
+     final provider = context.read<DatabaseProvider>();
+    
     showDialog(
       context: context,
       builder: (context) => AlertDialog(
@@ -559,94 +770,185 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
             // mainAxisAlignment: MainAxisAlignment.spaceBetween,
 
             children: [
-              TextField(
-                controller: productNameController,
-                decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  hintText: "Product Name",
-                  hintStyle: TextStyle(
-                    color: color,
-                  ),
-                ),
+              SizedBox(
+                height: 50,
+                child:  Stack(
+  children: [
+    TextField(
+      controller: productNameController,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        hintText: "Product Name",
+        hintStyle: TextStyle(
+          color: color,
+        ),
+        suffixIcon: ElevatedButton(
+           style: ElevatedButton.styleFrom(
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+          ),   
+        onPressed: () async {
+                 String scannedBarcode = await scanBarcodeNormal();
+                 int sc = int.parse(scannedBarcode);
+                 if(sc == -1){
+                  
+                  Fluttertoast.showToast(msg: 'Echec du scan svp reessayer à nouveau');
+                 }else {
+                  
+                 productNameController.text = scannedBarcode; 
+                provider.toggleQrCodeTextFieldVisibility();
+                 }
+                  
+              },
+              child: const Icon(
+
+                Icons.qr_code_2_outlined,
+                color: Color(0xff368983),
+              ),
+      ),
+      ),
+      
+    ),
+   // Positioned(right: 0,),
+  ],
+),
               ),
               const SizedBox(
                 height: 10,
               ),
-               GestureDetector(
+                 SizedBox(
+    height: 50,
+    child:  Stack(
+   children: [
+    GestureDetector(
                 
-                child: TextField(
-                controller: productBuyingPriceController,
-                keyboardType: TextInputType.number,
-                onTap: () {
-            String productName = productNameController.text;
-            productExists = checkIfProductExists(productName);
-               if (productExists) {
-               Fluttertoast.showToast(msg: "$productName exists!");
-               print("$productName exists!");
-              } else {
-               Fluttertoast.showToast(msg: "$productName does not exist!");
-               }
-             },
-                decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  hintText: "Prix d'achat",
-                  hintStyle: TextStyle(
-                    color: color,
-                  ),
-                ),
-              ),
-               ),
+      child: TextField(
+      controller: productBuyingPriceController,
+      keyboardType: TextInputType.number,
+      onTap: () {
+  String productName = productNameController.text;
+  productExists = checkIfProductExists(productName.toLowerCase());
+     if (productExists) {
+     Fluttertoast.showToast(msg: "$productName exists!");
+     print("$productName exists!");
+    } else {
+     Fluttertoast.showToast(msg: "$productName n'exist pas!");
+     }
+   },
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        hintText: "Prix d'achat",
+        hintStyle: TextStyle(
+          color: color,
+        ),
+      ),
+    ),
+     ),
+  ],
+  ),
+  ),
               
               const SizedBox(
                 height: 10,
               ),
-              TextField(
-                controller: productSellingPriceController,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  enabledBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  focusedBorder: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  border: OutlineInputBorder(
-                      borderSide: BorderSide(color: color),
-                      borderRadius: BorderRadius.circular(20.r)),
-                  hintText: "Prix de vente",
-                  hintStyle: TextStyle(
-                    color: color,
-                  ),
-                ),
-              ),
+               SizedBox(
+    height: 50,
+    child:  Stack(
+   children: [
+    TextField(
+      controller: productSellingPriceController,
+      keyboardType: TextInputType.number,
+      decoration: InputDecoration(
+        enabledBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        focusedBorder: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        border: OutlineInputBorder(
+            borderSide: BorderSide(color: color),
+            borderRadius: BorderRadius.circular(20.r)),
+        hintText: "Prix de vente",
+        hintStyle: TextStyle(
+          color: color,
+        ),
+      ),
+    ),
+  ],
+  ),
+  ),
               const SizedBox(
+                height: 10,
+              ),
+  Visibility(
+  visible: provider.isQrCodeTextFieldVisible,
+  child: SizedBox(
+    height: 50,
+    child: Stack(
+      children: [
+        TextField(
+          controller: provider.productQrName,
+          keyboardType: TextInputType.text,
+          decoration: InputDecoration(
+            enabledBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: color),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderSide: BorderSide(color: color),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            border: OutlineInputBorder(
+              borderSide: BorderSide(color: color),
+              borderRadius: BorderRadius.circular(20.r),
+            ),
+            hintText: "Non produit",
+            hintStyle: TextStyle(
+              color: color,
+            ),
+          ),
+        ),
+      ],
+    ),
+  ),
+),
+
+   const SizedBox(
                 height: 10,
               ),
             ],
           ),
         ),
         actions: [
+        SingleChildScrollView(
+          scrollDirection: Axis.horizontal,
+
+       child : Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+              
           TextButton(
               onPressed: () {
                 Navigator.pop(context);
               },
-              child: Text("Annuler",
+              child: Text(
+                "Annuler",
                   style: TextStyle(color: color, fontSize: 15.sp),
                   ),
                   ),
@@ -654,6 +956,7 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
   onPressed: () {
     String productName = productNameController.text;
     bool productExists = checkIfProductExists(productName);
+    //bool productqrExist = checkIfProductqrExists(productName);
     if (productName.isEmpty) {
       Fluttertoast.showToast(msg: "Ajouter le nom du produit svp");
     } else if (productBuyingPriceController.text.isEmpty) {
@@ -665,8 +968,7 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
     } else if (productSellingPriceController.text.isEmpty) {
       Fluttertoast.showToast(msg: "Ajouter le prix de reviens svp");
     } else {
-      if (productExists) {
-        
+      if (productExists ) {
         updateData(context);
         Fluttertoast.showToast(msg: "Produit modifié avec succès");
       } else {
@@ -683,20 +985,40 @@ Future<List<Map<dynamic, dynamic>>> getAllOrders() async{
     style: TextStyle(color: color, fontSize: 15.sp),
   ),
 ),
-
+          ],
+        ),
+),
         ],
       ),
     );
   }
-    
+    //scan methode
+Future<String> scanBarcodeNormal() async {
+  String barcodeScanRes;
+  
+  try {
+    barcodeScanRes = await FlutterBarcodeScanner.scanBarcode(
+        '#ff6666', 'Cancel', true, ScanMode.BARCODE);
+    print(barcodeScanRes);
+  } on PlatformException {
+    barcodeScanRes = 'Failed to get platform version.';
+  }
+
+  return barcodeScanRes;
+}
+
+
+
+    //
 Future<void> getOrdersForCurrentDay() async{
     Completer<void> completer = Completer<void>();
    List<Map<dynamic, dynamic>> alldayOrders = <Map<dynamic, dynamic>>[];
-
+      
   // Récupérez la liste mise à jour des commandes pour la journée en cours
-  alldayOrders = await getAllOrders();
+  
   if (!_isDayDataCalculated) {
-    
+    //getOrders();
+   alldayOrders = getAllOrders();
   String currentDate = DateFormat('dd/MM/yyyy').format(DateTime.now());
   if (alldayOrders.isNotEmpty) {
     for (var e in alldayOrders) {
@@ -755,9 +1077,9 @@ Future<void> getOrdersForCurrentDay() async{
       alldayOrders.clear();
       print(alldayOrders);
     }
-    // Trigger the Completer to indicate that the operation is complete
+    
   completer.complete();
-  // Return the Completer's future
+  
   return completer.future;
 }
 
@@ -808,7 +1130,7 @@ print('order details weely: $ordersDetails');
     //ordersDetails.clear();
   }
 
-  //notifyListeners();
+  notifyListeners();
   print('Total Sales for Current Week: ${totalSales.toStringAsFixed(2)}');
   print('Total Quantity Sold this Week: ${totalQuantity.toStringAsFixed(2)}');
   print('Total Profit for Current Week: ${totalProfit.toStringAsFixed(2)}');
@@ -821,6 +1143,8 @@ print('order details weely: $ordersDetails');
 
     }
 
+  // scan 
+ 
   //Mounth
   Future<void> getOrdersForCurrentMonth() async {
   Completer<void> completer = Completer<void>();
@@ -891,7 +1215,60 @@ print('order details weely: $ordersDetails');
   return completer.future;
 }
 
+//scanner function
+ 
+void onSelectbarcode(String productName) async {
+
+  var productIndex = productsDetails.indexWhere((product) => product["productqrname"] == productName);
+
+if (selectedProducts.isEmpty) {
+    selectedProducts = <Map<dynamic, dynamic>>[];
+  }
+  if (productIndex != -1) {
+    bool isAlreadySelected = false;
+
+    for (var element in selectedProducts) {
+      if (productsDetails[productIndex]["productqrname"].toString().contains(element["productqrname"])) {
+        isAlreadySelected = true;
+        Fluttertoast.showToast(msg: "${element["productqrname"]} exist dejà");
+        print('exist deja $selectedProducts');
+        break;
+      }
+    }
+
+    if (!isAlreadySelected) {
+      if (productsDetails[productIndex]["quantity"] == null) {
+        productsDetails[productIndex]["quantity"] = 1.0;
+      }
+      selectedProducts.add(productsDetails[productIndex]);
+      print("prduct : ${productsDetails[productIndex]}");
+      
+   generateControllerscodbar(productsDetails[productIndex]);
+      
+    }
    
+   
+    
+
+    productCount = selectedProducts.length;
+   notifyListeners();
+  } else {
+    print("Product not found!"); 
+  }
+}
+
+
+//login
+ void logout() {
+  User? currentUser = users.get('current_user');
+  if (currentUser != null) {
+    currentUser.isLoggedIn = false; 
+  }
+  //Navigator.pushReplacement(context, MaterialPageRoute(builder: (context) => LoginScreen()));
+}
+ 
+
+  
 }
 //month
 

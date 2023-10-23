@@ -2,12 +2,13 @@
 
 import 'package:fiboutiquesv1/Providers/database_provider.dart';
 import 'package:fiboutiquesv1/Providers/totalprice.dart';
+import 'package:fiboutiquesv1/screen/loginscreen.dart';
+import 'package:fiboutiquesv1/screen/modifierpassword.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:provider/provider.dart';
 
-import '../screen/settings.dart';
 
 class HomeAppBar extends StatelessWidget {
   final double totalPrice;
@@ -16,9 +17,15 @@ class HomeAppBar extends StatelessWidget {
     Key? key, required this.totalPrice
   }) : super(key: key);
 
+
+
   @override
   Widget build(BuildContext context) {
     // Access TotalPriceProvider to update totalPrice
+ 
+
+
+
     TotalPriceProvider totalPriceProvider =
         Provider.of<TotalPriceProvider>(context);
     const mColor = Color(0xff368983);
@@ -30,20 +37,56 @@ class HomeAppBar extends StatelessWidget {
       ),
       duration: const Duration(seconds: 1),
       curve: Curves.bounceIn,
-      child: Column(
+      child:  Column(
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              IconButton(
-                  onPressed: () {
-                    Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                          builder: (context) => const SettingScreen(),
-                        ));
-                  },
-                  icon: Icon(Icons.settings, size: 30.sp, color: Colors.white)),
+              Consumer<DatabaseProvider>(
+        builder: (context, databaseProvider, child)  => PopupMenuButton<String>(
+            
+              color: Colors.white,
+                   onSelected: (value) {
+                  if (value == 'deconnexion') {
+                    databaseProvider.logout();
+                   // await FirebaseAuth.instance.signOut();
+                     Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const LoginScreen(),
+      ),
+      (route) => false,
+    );
+                  } else if (value == 'modifier_password') {
+                  
+                   
+                    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => const ModifierPassword(),
+      ),
+      (route) => false,
+    );
+                  }
+                },
+                itemBuilder: (BuildContext context) {
+                  return {'Deconnexion', 'Modifier_password'}
+                      .map((String choice) {
+                        print(choice);
+                    return PopupMenuItem<String>(
+                      
+                      value: choice.toLowerCase(),
+                      child: Text(choice,
+                      style: const TextStyle(
+                        color: mColor,
+                        fontWeight: FontWeight.bold
+                      ),
+                      ),
+                    );
+                  }).toList();
+                },
+                child: Icon(Icons.settings, size: 30.sp, color: Colors.white),
+                ),
+        ),
+                
               Text(
                 "${totalPriceProvider.totalPrice} FCFA", // Updated to use provider's total price
                 style: TextStyle(
@@ -124,7 +167,8 @@ class HomeAppBar extends StatelessWidget {
 
                         return InkWell(
                           onTap: () {
-                            databaseProvider.onSelect(product["name"]);
+                            databaseProvider.onSelect(product["ProductName"]);
+                          //  databaseProvider.onSelectbarcode(product["name"]);
                           },
                           child: Container(
                             padding: EdgeInsets.all(10.sp),
@@ -143,7 +187,7 @@ class HomeAppBar extends StatelessWidget {
                                 SizedBox(width: 20.w),
                                 Expanded(
                                   child: Text(
-                                    product["name"],
+                                    product["ProductName"],
                                     style: TextStyle(
                                       color: Colors.black,
                                       fontWeight: FontWeight.w600,

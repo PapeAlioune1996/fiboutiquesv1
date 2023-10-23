@@ -25,7 +25,7 @@ class OrderProvider with ChangeNotifier {
 
     List<Map<dynamic, dynamic>> allOrders = [];
     for (int a = 0; a < _ordersBox.length; a++) {
-      var val = await _ordersBox.get(a);
+      var val = _ordersBox.get(a);
       allOrders.add(val!);
     }
     return allOrders;

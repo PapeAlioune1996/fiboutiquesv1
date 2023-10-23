@@ -5,6 +5,7 @@ import 'package:fiboutiquesv1/Providers/totalprice.dart';
 import 'package:fiboutiquesv1/widgets/home_app_bar.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
+import 'package:flutter_glow/flutter_glow.dart';
 import 'package:flutter_screenutil/flutter_screenutil.dart';
 import 'package:fluttertoast/fluttertoast.dart';
 import 'package:provider/provider.dart';
@@ -33,6 +34,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
           .initialiseControllers();
       Provider.of<AudioProvider>(context, listen: false).getDir();
       Provider.of<DatabaseProvider>(context, listen: false).getData();
+      Provider.of<DatabaseProvider>(context, listen: false).fetchProductsFromFirebaseAndSaveToHive();
       Provider.of<AudioProvider>(context, listen: false).initPlayer();
 
     });
@@ -112,7 +114,7 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                   builder: (context, audioProvider, child) => Visibility(
                     visible: audioProvider.fileList.isNotEmpty,
                     child: Container(
-                      color: Colors.grey.withOpacity(0.1),
+                      color: Colors.grey.withOpacity(0.5),
                       height: 100.h,
                       // padding: EdgeInsets.all(8),
                       child: ListView.builder(
@@ -135,28 +137,26 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                               mainAxisAlignment: MainAxisAlignment.spaceBetween,
                               children: [
                                 IconButton(
-                                  onPressed: () {
-                                    audioProvider.isPlaying
-                                        ? audioProvider.stopPlayer()
-                                        : audioProvider.preparePlayer(
-                                            audioProvider.fileList[index].path,
-                                            index);
-                                  },
-                                  icon: CircleAvatar(
-                                      backgroundColor: mcolor,
-                                      radius: 18.r,
-                                      child: Icon(
-                                        audioProvider.isPlaying
-                                            ? audioProvider.selectedIndex ==
-                                                    index
-                                                ? CupertinoIcons.pause
-                                                : CupertinoIcons
-                                                    .play_arrow_solid
-                                            : CupertinoIcons.play_arrow_solid,
-                                        color: Colors.white,
-                                        size: 15.sp,
-                                      )),
-                                ),
+  onPressed: () {
+    audioProvider.isPlaying
+           ? audioProvider.stopPlayer()
+            : audioProvider.mypreparePlayer( audioProvider.fileList[index].path,index);
+  },
+  icon: CircleAvatar(
+    backgroundColor: mcolor,
+    radius: 18.r,
+    child: Icon(
+      audioProvider.isPlaying
+          ? audioProvider.selectedIndex == index
+              ? CupertinoIcons.pause
+              : CupertinoIcons.play_arrow_solid
+          : CupertinoIcons.play_arrow_solid,
+      color: Colors.white,
+      size: 15.sp,
+    ),
+  ),
+),
+
                                 SizedBox(width: 10.w),
                                 audioProvider.isPlaying
                                     ? audioProvider.selectedIndex == index
@@ -309,20 +309,38 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                          // databaseProvider.setText(index);
                           var product = databaseProvider.selectedProducts[index];
                       return Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceAround,
+                       mainAxisAlignment: MainAxisAlignment.spaceAround,
                         children: [
-                          Text(databaseProvider.selectedProducts.isEmpty
-                              ? "not selected"
-                              : databaseProvider.selectedProducts[index]["name"]),
                           Flexible(
                             child: SizedBox(
-                              width: 80,
+                              width: 55,
+                              child: GestureDetector(
+                                onTap: () {
+                                  
+                                },
+                                child: GlowText(
+                              databaseProvider.selectedProducts.isEmpty
+                              ? "not selected"
+                              : databaseProvider.selectedProducts[index]["ProductName"],
+                              overflow: TextOverflow.visible,
+                               style: TextStyle(
+                                fontFamily: 'Roboto',
+                                color: mcolor,
+                                fontWeight: FontWeight.bold
+                                
+                               ),
+                              ),
+                              ),
+                            ),
+                            ),
+                          Flexible(
+                            child: SizedBox(
+                              width: 120,
                               height: 35, // Add this line
                               child: TextField(
                                 controller: databaseProvider
                                     .productSellingPriceController1[index],   
                                 keyboardType: TextInputType.number,
-                                  
                                 decoration: InputDecoration(
                                   labelText: 'selling price',
                                   labelStyle: TextStyle(
@@ -344,7 +362,10 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                               ),
                             ),
                           ),
-                          Flexible(
+                          //Visibility(
+                            //visible: false,
+                           // child:
+                             Flexible(
                             flex: 1,
                             child: SizedBox(
                               width: 80,
@@ -372,47 +393,41 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                               ),
                             ),
                           ),
+                         // ),
                           Flexible(
                             flex: 1,
-                            child: SizedBox(
+                            child : SizedBox(
                               width: 80,
                               height: 35,
-                              // Add this line
-                              child: TextField(
+                              child:  /*IconButton(
+                            onPressed: () {
+                          double currentQuantity = double.parse(databaseProvider.productQuantityController[index].text);
+                          double newQuantity = currentQuantity + 0.5;  
+                           if (newQuantity <= 0.0) {
+                                 newQuantity = 0.0;
+                                     }
+                               double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                               double individualTotalPrice = sellingPrice * newQuantity;
+                               //totalPrice = individualTotalPrice;
+                              WidgetsBinding.instance.addPostFrameCallback((_) {
+                             totalPriceProvider.updateTotalPrice(individualTotalPrice);
+                                });
+                              databaseProvider.productQuantityController[index].text = newQuantity.toStringAsFixed(1);
+                                },
+                           icon: const Icon(Icons.add),
+                              ),
+                               ),*/
+                              TextField(
                                 controller: databaseProvider.productQuantityController[index],
                                 keyboardType: TextInputType.number,
                                 autofocus: true,
-                               /* onChanged: (newQuantity) {
-                                double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
-                               double quantity = double.parse(newQuantity);
-
-                                 double individualTotalPrice = sellingPrice * quantity;
-                                 totalPrice -= individualTotalPrice;
-                                  individualTotalPrice = sellingPrice * quantity;
-
-                                  totalPrice += individualTotalPrice;
-
-                                  print('total price so far: $totalPrice');
-                                  print('quantity changedd $quantity');
-                                  
-                                 },*/
-                               /* onEditingComplete: () {
-                           double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
-                           double quantity = double.parse(databaseProvider.productQuantityController[index].text);
-                          print('quantity change $quantity');
-                          double individualTotalPrice = sellingPrice * quantity;
-                           print('total price for product $index: $individualTotalPrice');
-                           totalPrice += individualTotalPrice; 
-                           print('total price so far: $totalPrice');
- 
-                          },*/
+                               
                           onEditingComplete: () {
                     double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                    double quantity = double.parse(databaseProvider.productQuantityController[index].text);
                    double individualTotalPrice = sellingPrice * quantity;
                       totalPrice += individualTotalPrice; 
-                    // Update totalPrice using TotalPriceProvider
-                    //totalPriceProvider.updateTotalPrice(totalPrice);
+                   
                     WidgetsBinding.instance.addPostFrameCallback((_) {
                   totalPriceProvider.updateTotalPrice(totalPrice);
                   });
@@ -438,43 +453,114 @@ class _MyHomeScreeState extends State<MyHomeScree> {
                                   ),
                                 ),
                               ),
-                            ),
+                            
                           ),
+                          /*Flexible(
+                            flex: 1,
+                            child: SizedBox(
+                              width: 80,
+                              height: 35,
+                              child: TextField(
+                                 enabled: false,
+                                controller: databaseProvider.productQuantityController[index],
+                                keyboardType: TextInputType.number,
+                                autofocus: false,
+                                
+                                
+                                 ),*/
+                                 
+                            
+                            
+                            ),
+                        
+                          /* Flexible(
+                            flex: 1,
+                            child : SizedBox(
+                              width: 80,
+                              height: 35,
+                            
+                              child:  IconButton(
+                            onPressed: () {
+                                double currentQuantity = double.parse(databaseProvider.productQuantityController[index].text);
+                                double newQuantity = currentQuantity - 0.5;
+                                //double myQuantity = newQuantity;
+                                  if (newQuantity <=0.0) {
+                                  newQuantity = 0.0;
+                                             }
+                                    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                                   double individualTotalPrice = sellingPrice * newQuantity;
+                                  print(newQuantity);
+                                    totalPrice = individualTotalPrice;
+                                     if (newQuantity <= 0.0) {
+                                       totalPrice = 0.0;
+                                         }else if (totalPrice <= 0.0){
+                                          totalPrice = 0.0;
+                                         }
+                                         totalPriceProvider.updateTotalPrice(totalPrice);
+                                          databaseProvider.productQuantityController[index].text = newQuantity.toStringAsFixed(1);
+                                    
+                                },
+                           icon: const Icon(Icons.remove),
+                              ),
+                               ),
+                               ),*/
                           Column(
                             mainAxisAlignment: MainAxisAlignment.end,
                             children: [
                               Row(
                                 children: [
-                                  
-                                /*IconButton(
-                                    onPressed: () {
-                                      double newSellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
-                                      double newBuyingPrice = double.parse(databaseProvider.productBuyingPriceController1[index].text);
-                                      String productName = databaseProvider.selectedProducts[index]["name"];
-                                      databaseProvider.updateProductPrices(productName, newSellingPrice, newBuyingPrice);
-   
-                                   },
-                                    icon: CircleAvatar(
-                                        backgroundColor: mcolor,
-                                        radius: 15.r,
-                                        child: Icon(
-                                          Icons.update,
-                                          size: 20.sp,
-                                          color: Colors.white,
-                                        ),
-                                        ),
-                                        ),*/
+                    
                                   IconButton(
                                     onPressed: () {
-                                    double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
+                                    
+                                     showDialog(context: context, builder: (BuildContext ctx){
+                                      return AlertDialog(
+                                        title:  Text('Merci de faire un choix.',
+                                                style: TextStyle(
+                                                  color: mcolor,
+                                                  fontWeight: FontWeight.bold,
+                                                ),
+                                        ),
+                                        content: Text('Voulez-vous supprimer ce produit!',
+                                           style: TextStyle(
+                                            color: mcolor,
+                                           ),
+                                        ),
+                                        actions: [
+                                          TextButton(onPressed: (){
+                                            
+                                      double sellingPrice = double.parse(databaseProvider.productSellingPriceController1[index].text);
                                     double quantity = double.parse(databaseProvider.productQuantityController[index].text);
                                     double individualTotalPrice = sellingPrice * quantity;
                                     //String productname = databaseProvider.P
                                     totalPrice -= individualTotalPrice;
                                     totalPriceProvider.updateTotalPrice(totalPrice);
 
-                                    databaseProvider.removeSelectedProduct(product["name"]);
+                                    databaseProvider.removeSelectedProduct(product["ProductName"]);
                                     print('total price after deletion: $totalPrice');
+                                    Navigator.of(context).pop();
+                                          }, 
+                                          child: const Text('OUI',
+                                           style: TextStyle(
+                                            color: Colors.red,
+                                            fontWeight: FontWeight.bold
+                                           ),
+                                          ),
+                                          ),
+                                           TextButton(onPressed: (){
+                                              Navigator.of(context).pop();
+                                          }, 
+                                          child: const Text('NON',
+                                           style: TextStyle(
+                                            color: Color(0xff368983),
+                                            fontWeight: FontWeight.bold
+                                           ),
+                                          ),
+                                          ),
+                                        ],
+                                      );
+
+                                     });
                                        },
                                     icon: const Icon(
                                       Icons.delete,

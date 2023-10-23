@@ -1,6 +1,7 @@
 import 'package:circular_bottom_navigation/circular_bottom_navigation.dart';
 import 'package:circular_bottom_navigation/tab_item.dart';
 import 'package:fiboutiquesv1/screen/home.dart';
+import 'package:fiboutiquesv1/screen/scanproductforregister.dart';
 import 'package:fiboutiquesv1/screen/statistics.dart';
 import 'package:flutter/cupertino.dart';
 import 'package:flutter/material.dart';
@@ -16,12 +17,13 @@ class Bottom extends StatefulWidget {
 class _BottomState extends State<Bottom> {
   // ignore: non_constant_identifier_names
   int index_color = 0;
-  List screen = [const MyHomeScree(), const Statistics()];
+  List screen = [const MyHomeScree(),const ScanProdut(), const Statistics()];
 
   late CircularBottomNavigationController navigationController;
 
   @override
   void initState() {
+    
     navigationController = CircularBottomNavigationController(index_color);
     super.initState();
   }
@@ -43,14 +45,23 @@ class _BottomState extends State<Bottom> {
                   color: Colors.white, fontWeight: FontWeight.w700),
               circleStrokeColor: Colors.white,
               index_color == 0 ? const Color(0xff368983) : Colors.grey),
-         
+         TabItem(
+              CupertinoIcons.camera_circle_fill,
+              "Camera",
+              labelStyle: const TextStyle(
+                  color: Colors.white, fontWeight: FontWeight.w700),
+              circleStrokeColor: Colors.white,
+              index_color == 1 ? const Color(0xff368983) : Colors.grey,
+              ),
           TabItem(
               CupertinoIcons.chart_bar_alt_fill,
               "Analytics",
               labelStyle: const TextStyle(
                   color: Colors.white, fontWeight: FontWeight.w700),
               circleStrokeColor: Colors.white,
-              index_color == 1 ? const Color(0xff368983) : Colors.grey),
+              
+              index_color == 2 ? const Color(0xff368983) : Colors.grey,
+              ),
         ],
         selectedCallback: (selectedPos) {
           setState(() {
@@ -58,44 +69,7 @@ class _BottomState extends State<Bottom> {
           });
         },
       ),
-      // BottomAppBar(
-      //   height: 55,
-      //   shape: const CircularNotchedRectangle(),
-      //   child: Padding(
-      //     padding: const EdgeInsets.only(bottom : 15),
-      //     child: Row(
-      //       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      //       children: [
-      //          IconButton(
-      //             onPressed: (){
-      //               setState(() {
-      //               index_color = 0;
-      //             });
-      //             },
-      //
-      //            icon : Icon(
-      //             Icons.home,
-      //             color: index_color == 0 ? const Color(0xff368983) : Colors.grey,
-      //           ),
-      //
-      //           ),
-      //           IconButton(
-      //             onPressed: (){
-      //               setState(() {
-      //               index_color = 1;
-      //             });
-      //
-      //           },
-      //           icon : Icon(
-      //             Icons.bar_chart_outlined,
-      //             color: index_color == 1 ? const Color(0xff368983) : Colors.grey,
-      //           ),
-      //           ),
-      //
-      //       ],
-      //     ),
-      //   ),
-      // ),
+    
     );
   }
 
